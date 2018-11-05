@@ -3,6 +3,7 @@ from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 import time
 
+#--------------Início dos parâmetros de entrada-------------------
 M1= MeshManager('16.msh')          # Objeto que armazenará as informações da malha
 all_volumes=M1.all_volumes
 
@@ -19,7 +20,6 @@ r0=0.4
 
 # Distância, em relação ao poço, até onde se usa malha intermediária (Ainda não implementado)
 r1=2
-
 #--------------fim dos parâmetros de entrada------------------------------------
 
 #--------------Definição das dimensões dos elementos da malha fina--------------
