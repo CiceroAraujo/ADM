@@ -210,9 +210,10 @@ dx2, dy2, dz2 = C2*dx1, C2*dy1, C2*dz1        # Dimensões dos volumes da malha 
 # Criação do vetor que define a "grade" que separa os volumes da malha grossa
 # Essa grade é absoluta (relativa ao reservatório como um todo)
 lx2, ly2, lz2 = [], [], []
-for i in range(int(Lx/(C1*C2*dx0))+1):    lx2.append(xmin+i*dx2)
-for i in range(int(Ly/(C1*C2*dy0))+1):    ly2.append(ymin+i*dy2)
-for i in range(int(Lz/(C1*C2*dz0))+1):    lz2.append(zmin+i*dz2)
+# O 0.01 corrige eventuais erros de ponto flutuante
+for i in range(int(Lx/(C1*C2*dx0))+0.01):    lx2.append(xmin+i*dx2)
+for i in range(int(Ly/(C1*C2*dy0))+0.01):    ly2.append(ymin+i*dy2)
+for i in range(int(Lz/(C1*C2*dz0))+0.01):    lz2.append(zmin+i*dz2)
 #-------------------------------------------------------------------------------
 
 # Vetor que define a "grade" que separa os volumes da malha fina
