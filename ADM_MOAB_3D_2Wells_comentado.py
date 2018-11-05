@@ -176,20 +176,31 @@ for c in coords:
 dx0, dy0, dz0 = xmax-xmin, ymax-ymin, zmax-zmin # Tamanho de cada elemento na malha fina
 #-------------------------------------------------------------------------------
 
-# Definição dos volumes que pertencem à malha fina e armazenamento em uma lista
-wells=[]
-G_ID_min=0              #É usado para determinar o manor dos global IDs de volume
+# ----- Definição dos volumes que pertencem à malha fina e armazenamento em uma lista----
+
+# Wells -> Lista qua armazena os volumes com completação e também aqueles com distância (em relação ao centroide) 
+#aos volumes com completação menor que "r0"
+wells=[]  
+# G_ID_min -> É usado para determinar o menor dos global IDs de volume, para fins de preenchimento dos operadores
+G_ID_min=0           
 for e in all_volumes:
-    e_tags=M1.mb.tag_get_tags_on_entity(e)
-    if M1.mb.tag_get_data(e_tags[0], e, flat=True)>G_ID_min:
+    e_tags = M1.mb.tag_get_tags_on_entity(e)
+    #xxxx- Essa parte, ao final do loop, fornece o menor global ID da malha
+    Global_ID = e_tags[0]    
+    if M1.mb.tag_get_data(Global_ID, e, flat=True)>G_ID_min:
         G_ID_min=M1.mb.tag_get_data(e_tags[0], e, flat=True)
-    centroid=M1.mtu.get_average_position([e])    
+    #xxxx
+    #xxxx- Essa parte determina se cada um dos elementos está a uma distância inferior a "r0" de alguma completação  
+    # O quadrado serve para pegar os volumes qualquer direção
+    centroid=M1.mtu.get_average_position([e])   
+    # Cent_wells -> Lista com o centroide de cada completação
     for c in Cent_weels:
         dx=(centroid[0]-c[0])**2
         dy=(centroid[1]-c[1])**2
         dz=(centroid[2]-c[2])**2
         if dx<r0**2 and dy<r0**2 and dz<r0**2:
             wells.append(e)
+     #xxxx
 #-------------------------------------------------------------------------------
 
 #Determinação das dimensões do reservatório e dos volumes das malhas intermediária e grossa
