@@ -139,21 +139,24 @@ class MeshManager:
         distance = sqrt(np.dot(dist_vector, dist_vector))
         return distance
 
-
 #--------------Início dos parâmetros de entrada-------------------
-M1= MeshManager('16.msh')          # Objeto que armazenará as informações da malha
+M1= MeshManager('9x54x54.msh')          # Objeto que armazenará as informações da malha
 all_volumes=M1.all_volumes
 
 # Ci = n: Ci -> Razão de engrossamento ni nível i (em relação ao nível i-1),
 # n -> número de blocos em cada uma das 3 direções (mesmo número em todas)
-C1=2
-C2=2
+C1=3
+C2=3
 
 # Posição aproximada de cada completação
-Cent_weels=[[0.5, 0.5, 0.5], [7.5, 0.5, 7.5]]
+Cent_weels=[[1.5, 1.5, 1.5], [1.5, 1.5, 4.5], [1.5, 1.5, 7.5],
+            [52.5, 1.5, 1.5], [52.5, 1.5, 4.5], [52.5, 1.5, 7.5],
+            [1.5, 52.5, 1.5], [1.5, 52.5, 4.5], [1.5, 52.5, 7.5],
+            [52.5, 52.5, 1.5], [52.5, 52.5, 4.5], [52.5, 52.5, 7.5],
+            [27, 27, 1.5], [27, 27, 4.5], [27, 27, 7.5]]
 
 # Distância, em relação ao poço, até onde se usa malha fina
-r0=0.4
+r0=1.1
 
 # Distância, em relação ao poço, até onde se usa malha intermediária (Ainda não implementado)
 r1=2
@@ -178,21 +181,20 @@ dx0, dy0, dz0 = xmax-xmin, ymax-ymin, zmax-zmin # Tamanho de cada elemento na ma
 
 # ----- Definição dos volumes que pertencem à malha fina e armazenamento em uma lista----
 
-# Wells -> Lista qua armazena os volumes com completação e também aqueles com distância (em relação ao centroide) 
+# Wells -> Lista qua armazena os volumes com completação e também aqueles com distância (em relação ao centroide)
 #aos volumes com completação menor que "r0"
-wells=[]  
+wells=[]
 # G_ID_min -> É usado para determinar o menor dos global IDs de volume, para fins de preenchimento dos operadores
-G_ID_min=0           
+G_ID_min=0              #É usado para determinar o manor dos global IDs de volume
 for e in all_volumes:
-    e_tags = M1.mb.tag_get_tags_on_entity(e)
+    e_tags=M1.mb.tag_get_tags_on_entity(e)
     #xxxx- Essa parte, ao final do loop, fornece o menor global ID da malha
-    Global_ID = e_tags[0]    
-    if M1.mb.tag_get_data(Global_ID, e, flat=True)>G_ID_min:
+    if M1.mb.tag_get_data(e_tags[0], e, flat=True)>G_ID_min:
         G_ID_min=M1.mb.tag_get_data(e_tags[0], e, flat=True)
     #xxxx
-    #xxxx- Essa parte determina se cada um dos elementos está a uma distância inferior a "r0" de alguma completação  
+    #xxxx- Essa parte determina se cada um dos elementos está a uma distância inferior a "r0" de alguma completação
     # O quadrado serve para pegar os volumes qualquer direção
-    centroid=M1.mtu.get_average_position([e])   
+    centroid=M1.mtu.get_average_position([e])
     # Cent_wells -> Lista com o centroide de cada completação
     for c in Cent_weels:
         dx=(centroid[0]-c[0])**2
@@ -200,7 +202,7 @@ for e in all_volumes:
         dz=(centroid[2]-c[2])**2
         if dx<r0**2 and dy<r0**2 and dz<r0**2:
             wells.append(e)
-     #xxxx
+        #xxxx
 #-------------------------------------------------------------------------------
 
 #Determinação das dimensões do reservatório e dos volumes das malhas intermediária e grossa
@@ -210,7 +212,7 @@ for v in M1.all_nodes:       # M1.all_nodes -> todos os vértices da malha fina
     if c[0]<xmin: xmin=c[0]
     if c[1]>ymax: ymax=c[1]
     if c[1]<ymin: ymin=c[1]
-    if c[2]>zmax: zmax=c[0]
+    if c[2]>zmax: zmax=c[2]
     if c[2]<zmin: zmin=c[2]
 
 Lx, Ly, Lz = xmax-xmin, ymax-ymin, zmax-zmin  # Dimensões do reservatório
@@ -221,10 +223,10 @@ dx2, dy2, dz2 = C2*dx1, C2*dy1, C2*dz1        # Dimensões dos volumes da malha 
 # Criação do vetor que define a "grade" que separa os volumes da malha grossa
 # Essa grade é absoluta (relativa ao reservatório como um todo)
 lx2, ly2, lz2 = [], [], []
-# O 0.01 corrige eventuais erros de ponto flutuante
-for i in range(int(Lx/(C1*C2*dx0))+0.01):    lx2.append(xmin+i*dx2)
-for i in range(int(Ly/(C1*C2*dy0))+0.01):    ly2.append(ymin+i*dy2)
-for i in range(int(Lz/(C1*C2*dz0))+0.01):    lz2.append(zmin+i*dz2)
+# O valor 0.01 é adicionado para corrigir erros de ponto flutuante
+for i in range(int(Lx/(C1*C2*dx0)+0.01)):    lx2.append(xmin+i*dx2)
+for i in range(int(Ly/(C1*C2*dy0)+0.01)):    ly2.append(ymin+i*dy2)
+for i in range(int(Lz/(C1*C2*dz0)+0.01)):    lz2.append(zmin+i*dz2)
 #-------------------------------------------------------------------------------
 
 # Vetor que define a "grade" que separa os volumes da malha fina
@@ -240,19 +242,26 @@ t0=time.time()
 # Esse bloco é executado apenas uma vez em um problema bifásico, sua eficiência
 # não é criticamente importante.
 L2_meshset=M1.mb.create_meshset()       # root Meshset
-print(all_volumes[0])
+
+AV_meshset=M1.mb.create_meshset()
+for e in all_volumes: M1.mb.add_entities(AV_meshset,[e])
 for i in lx2:
+    t1=time.time()
     for j in ly2:
         for k in lz2:
             l2_meshset=M1.mb.create_meshset()
+            all_volumes=M1.mb.get_entities_by_handle(AV_meshset)
             for elem in all_volumes:
-                # Refactory here
-                # Verificar se o uso de um vértice reduz o custo
                 centroid=M1.mtu.get_average_position([elem])
                 if (centroid[0]>i) and (centroid[0]<i+dx2) and (centroid[1]>j)\
                 and (centroid[1]<j+dy2) and (centroid[2]>k) and (centroid[2]<k+dz2):
-                    M1.mb.add_entities(l2_meshset, [elem])
+                    M1.mb.add_entities(l2_meshset,[elem])
+                    M1.mb.remove_entities(AV_meshset,[elem])
                     elem_por_L2=M1.mb.get_entities_by_handle(l2_meshset)
+                #.mb.delete_entities(AV_meshset,l2_meshset)
+            sg=M1.mb.get_entities_by_handle(l2_meshset)
+            print(k, len(sg), time.time()-t1)
+            t1=time.time()
             for m in lx1:
                 for n in ly1:
                     for o in lz1:
@@ -269,6 +278,7 @@ for i in lx2:
                                 M1.mb.add_child_meshset(L2_meshset,l2_meshset)
                         elem_por_L1=M1.mb.get_entities_by_handle(l1_meshset)
 #-------------------------------------------------------------------------------
+all_volumes=M1.all_volumes
 print('Criação da árvore: ',time.time()-t0)
 t0=time.time()
 # --------------Atribuição dos IDs de cada nível em cada volume-----------------
@@ -280,6 +290,8 @@ L1_ID_tag=M1.mb.tag_get_handle("l1_ID", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DE
 # Tag que armazena o ID do volume no nível 2
 L2_ID_tag=M1.mb.tag_get_handle("l2_ID", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DENSE, True)
 # ni = ID do elemento no nível i
+L3_ID_tag=M1.mb.tag_get_handle("l3_ID", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DENSE, True)
+# ni = ID do elemento no nível i
 n1=0
 n2=0
 aux=0
@@ -290,8 +302,6 @@ for m2 in meshset_by_L2:
     for m1 in meshset_by_L1:
         elem_by_L1 = M1.mb.get_entities_by_handle(m1)
         for elem1 in elem_by_L1:
-            elem1_tags = M1.mb.tag_get_tags_on_entity(elem1)
-            elem1_Global_ID = M1.mb.tag_get_data(elem1_tags[0], elem1, flat=True)
             if elem1 in wells:
                 aux=1
                 tem_poço_no_vizinho=True
@@ -302,6 +312,7 @@ for m2 in meshset_by_L2:
                 n2+=1
                 M1.mb.tag_set_data(L1_ID_tag, elem, np.array([n1], dtype=np.float))
                 M1.mb.tag_set_data(L2_ID_tag, elem, np.array([n2], dtype=np.float))
+                M1.mb.tag_set_data(L3_ID_tag, elem, np.array([1], dtype=np.float))
                 elem_tags = M1.mb.tag_get_tags_on_entity(elem)
                 elem_Global_ID = M1.mb.tag_get_data(elem_tags[0], elem, flat=True)
                 wells.append(elem)
@@ -315,6 +326,7 @@ for m2 in meshset_by_L2:
                 if elem not in wells:
                     M1.mb.tag_set_data(L1_ID_tag, elem, np.array([n1], dtype=np.float))
                     M1.mb.tag_set_data(L2_ID_tag, elem, np.array([n2], dtype=np.float))
+                    M1.mb.tag_set_data(L3_ID_tag, elem, np.array([2], dtype=np.float))
                     t=0
             n1-=t
             n2-=t
@@ -327,6 +339,7 @@ for m2 in meshset_by_L2:
                 elem2_tags = M1.mb.tag_get_tags_on_entity(elem)
                 M1.mb.tag_set_data(L2_ID_tag, elem2, np.array([n2], dtype=np.float))
                 M1.mb.tag_set_data(L1_ID_tag, elem2, np.array([n1], dtype=np.float))
+                M1.mb.tag_set_data(L3_ID_tag, elem2, np.array([3], dtype=np.float))
 # ------------------------------------------------------------------------------
 print('Distribuição das tags: ',time.time()-t0)
 t0=time.time()
