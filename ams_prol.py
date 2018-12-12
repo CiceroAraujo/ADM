@@ -125,7 +125,7 @@ class AMS_prol:
         self.fine_to_primal1_classic_tag = self.mb.tag_get_handle("FINE_TO_PRIMAL1_CLASSIC")
         self.fine_to_primal2_classic_tag = self.mb.tag_get_handle("FINE_TO_PRIMAL2_CLASSIC")
         self.pf_tag = self.mb.tag_get_handle("PF", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-        self.id_wells_tag = self.mb.tag_get_handle("I", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        # self.id_wells_tag = self.mb.tag_get_handle("I", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
 
     def get_CrsMatrix_by_array(self, M, n_rows = None, n_cols = None):
         """
@@ -352,6 +352,60 @@ class AMS_prol:
         self.OP = self.pymultimat(self.G, self.OP, self.nf)
         op, self.inds_OP = self.modificar_matriz(self.OP, self.nf, self.nc1, self.nf, return_inds = True)
         np.save('inds_op', self.inds_OP)
+
+    def get_OR1(self):
+
+        linesf = np.array([])
+        colsf = np.array([])
+        valuesf = np.array([], dtype=np.float64)
+        n_cols=0
+        n_lines = self.nf
+
+        my_primals1 = set()
+
+        for v in self.all_volumes:
+            nv = self.mb.tag_get_data(self.L3_tag, v, flat=True)[0]
+            if nv == 1 or nv == 2:
+                gid_nv1 = self.mb.tag_get_data(self.L1_tag, v, flat = True)[0]
+                if gid_nv1 in my_primals1:
+                    continue
+                or_tag = self.mb.tag_get_handle(
+                    "OR_{0}".format(gid_nv1), 1, types.MB_TYPE_INTEGER, True,
+                    types.MB_TAG_SPARSE, default_value=0)
+                my_primals1.add(gid_nv1)
+                elems_in_primal = self.mb.get_entities_by_type_and_tag(
+                    self.root_set, types.MBHEX, self.L1_tag,
+                    np.array([gid_nv1]))
+
+                gids_elems = self.mb.tag_get_data(self.global_id0_tag, elems_in_primal, flat=True)
+
+                linesf = np.append(linesf, gids_elems)
+                colsf = np.append(colsf, np.repeat(gid_nv1, len(gids_elems)))
+                valuesf = np.append(valuesf, np.ones(len(gids_elems)))
+                n_cols+=1
+                self.mb.tag_set_data(or_tag, elems_in_primal, np.ones(len(elems_in_primal), dtype=np.int))
+            else:
+                gid_nv1 = self.mb.tag_get_data(self.L1_tag, v, flat = True)
+                gid_elem = self.mb.tag_get_data(self.global_id0_tag, v, flat=True)
+                or_tag = self.mb.tag_get_handle(
+                    "OR_{0}".format(gid_nv1), 1, types.MB_TYPE_INTEGER, True,
+                    types.MB_TAG_SPARSE, default_value=0)
+
+                linesf = np.append(linesf, gid_elem)
+                colsf = np.append(colsf, gid_nv1)
+                valuesf = np.append(valuesf, np.array([1.0]))
+                n_cols+=1
+                self.mb.tag_set_data(or_tag, v, 1)
+
+
+        linesf = linesf.astype(np.int32)
+        colsf = colsf.astype(np.int32)
+        sz = [n_lines, n_cols]
+
+        inds_or1 = np.array([linesf, colsf, valuesf, sz])
+        np.save('inds_or1', inds_or1)
+
+        return inds_or1
 
     def get_wells(self):
         self.wells_n = self.mb.tag_get_data(self.wells_n_tag, 0, flat=True)[0]
@@ -639,10 +693,16 @@ class AMS_prol:
         wells_n = self.mb.tag_get_data(self.wells_n_tag, 0, flat=True)[0]
         wells_d = self.mb.get_entities_by_handle(wells_d)
         wells_n = self.mb.get_entities_by_handle(wells_n)
+        # el = self.all_volumes[-1]
+        # self.mb.tag_set_data(self.press_tag, el, 0.0)
+        # wells_d = [el]
+        # el = self.all_volumes[0]
+        # self.mb.tag_set_data(self.q_tag, el, 1.0)
+        # wells_n = [el]
 
         for v in wells_d:
             self.mb.tag_set_data(self.id_wells_tag, v, 1.0)
-            gid = self.mb.tag_get_data(self.global_id0_tag, v, flat=True)[0]            
+            gid = self.mb.tag_get_data(self.global_id0_tag, v, flat=True)[0]
             indices = np.where(inds2[0] == gid)[0]
             inds2[0] = np.delete(inds2[0], indices)
             inds2[1] = np.delete(inds2[1], indices)
@@ -742,6 +802,7 @@ class AMS_prol:
     def set_OP(self):
         all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat=True)
         map_gids_in_volumes = dict(zip(all_gids, list(self.all_volumes)))
+        self.inds_OP = np.load('inds_op.npy')
 
         OP = np.zeros((max(self.inds_OP[0])+1, max(self.inds_OP[0])+1), dtype=np.float64)
         OP[self.inds_OP[0], self.inds_OP[1]] = self.inds_OP[2]
@@ -770,41 +831,43 @@ class AMS_prol:
     def run(self):
         map_global = dict(zip(self.all_volumes, range(self.nf)))
 
-        # b, s, inds = self.set_global_problem_AMS_gr_faces(self.map_wirebasket)
-        # inds_transmod = self.mod_transfine_wirebasket_by_inds(inds)
+        b, s, inds = self.set_global_problem_AMS_gr_faces(self.map_wirebasket)
+        inds_transmod = self.mod_transfine_wirebasket_by_inds(inds)
         # self.trans_mod = self.get_CrsMatrix_by_inds(inds_transmod)
-        # self.trans_mod = np.zeros((self.nf, self.nf), dtype=np.float64)
-        # self.trans_mod[inds_transmod[0], inds_transmod[1]] = inds_transmod[2]
+        self.trans_mod = np.zeros((self.nf, self.nf), dtype=np.float64)
+        self.trans_mod[inds_transmod[0], inds_transmod[1]] = inds_transmod[2]
         # self.G, self.GT = self.permutation_matrix()
         # self.get_OP()
         # self.set_OP()
-        # self.organize_op1()
+        self.organize_op1()
+        self.get_OR1()
 
 
 
 
-        bf, sf, indsf = self.set_global_problem_AMS_gr_faces(map_global)
-        std_map = Epetra.Map(self.nf, 0, self.comm)
-        bf = Epetra.Vector(std_map)
-        bf, indsf = self.set_boundary(bf, indsf)
-
-        # for i in range(self.nf):
-        #     indices = np.where(indsf[0] == i)[0]
-        #     lines = indsf[0][indices]
-        #     cols = indsf[1][indices]
-        #     values = indsf[2][indices]
-        #     print(lines)
-        #     print(cols)
-        #     print(values)
-        #     print(sum(values))
-        #     print(bf[i])
-        #     print('\n')
-        #     import pdb; pdb.set_trace()
-
-        A = self.get_CrsMatrix_by_inds(indsf)
-
-        x = self.solve_linear_problem(A, bf, self.nf)
-        self.mb.tag_set_data(self.pf_tag, self.all_volumes, np.asarray(x))
+        # bf, sf, indsf = self.set_global_problem_AMS_gr_faces(map_global)
+        # std_map = Epetra.Map(self.nf, 0, self.comm)
+        # bf = Epetra.Vector(std_map)
+        # bf, indsf = self.set_boundary(bf, indsf)
+        #
+        # # for i in range(self.nf):
+        # #     indices = np.where(indsf[0] == i)[0]
+        # #     lines = indsf[0][indices]
+        # #     cols = indsf[1][indices]
+        # #     values = indsf[2][indices]
+        # #     print(lines)
+        # #     print(cols)
+        # #     print(values)
+        # #     print(sum(values))
+        # #     print(bf[i])
+        # #     print('\n')
+        # #     import pdb; pdb.set_trace()
+        #
+        # A = self.get_CrsMatrix_by_inds(indsf)
+        #
+        # x = self.solve_linear_problem(A, bf, self.nf)
+        # self.mb.tag_set_data(self.pf_tag, self.all_volumes, np.asarray(x))
+        # import pdb; pdb.set_trace()
 
 
         self.mb.write_file('9x27x27_out_adm.vtk')

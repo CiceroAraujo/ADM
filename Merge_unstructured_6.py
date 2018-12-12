@@ -255,7 +255,7 @@ l1=3
 l2=9
 print("leu")
 # Posição aproximada de cada completação
-Cent_weels=[[0.5, 0.5, 0.5], [26.5, 26.5, 0.5],[9, 9, 2.5], [18, 9, 0.5], [9, 18, 0.5], [18, 18, 0.5]]
+Cent_weels=[[0.5, 0.5, 0.5], [26.5, 26.5, 0.5],[9, 9, 0.5], [18, 9, 0.5], [9, 18, 0.5], [18, 18, 0.5]]
 
 # Distância, em relação ao poço, até onde se usa malha fina
 r0=.9
@@ -330,13 +330,13 @@ M1.mb.tag_set_data(M1.wells_tag, 0,pocos_meshset)
 print("definiu volumes na malha fina")
 print(pocos_meshset)
 
-volumes_d = [M1.mb.get_entities_by_handle(pocos_meshset)[1]]
-volumes_n = [M1.mb.get_entities_by_handle(pocos_meshset)[0]]
+volumes_d = [M1.all_volumes[0]]
+volumes_n = [M1.all_volumes[-1]]
 print(volumes_d,"volumes_d")
 print(volumes_n,"volumes_n")
 
 
-press = [3.0]
+press = [0.0]
 vazao = [1.0]
 
 
@@ -696,7 +696,7 @@ for e in all_volumes:
     elem_ID1 = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
     R01[elem_ID1-1][elem_Global_ID-G_ID_min]=1
 # ------------------------------------------------------------------------------
-np.save('')
+
 
 # Criação e preenchimento do operador de restrição do nível 1 para o nível 2
 R12=np.zeros((n2,n1),dtype=np.int)
