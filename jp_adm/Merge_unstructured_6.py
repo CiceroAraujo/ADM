@@ -337,7 +337,7 @@ print(volumes_n,"volumes_n")
 
 
 press = [0.0]
-vazao = [1.0]
+vazao = [50.0]
 
 
 dirichlet_meshset = M1.mb.create_meshset()
