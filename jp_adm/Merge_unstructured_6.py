@@ -255,7 +255,7 @@ l1=3
 l2=9
 print("leu")
 # Posição aproximada de cada completação
-Cent_weels=[[0.5, 0.5, 0.5], [26.5, 26.5, 0.5],[9, 9, 0.5], [18, 9, 0.5], [9, 18, 0.5], [18, 18, 0.5]]
+Cent_weels=[[0.5, 0.5, 8.5], [26.5, 26.5, 0.5],[9, 9, 0.5], [18, 9, 0.5], [9, 18, 0.5], [18, 18, 0.5]]
 
 # Distância, em relação ao poço, até onde se usa malha fina
 r0=.9
@@ -336,25 +336,9 @@ print(volumes_d,"volumes_d")
 print(volumes_n,"volumes_n")
 
 
-press = [0.0]
-vazao = [50.0]
 
-
-dirichlet_meshset = M1.mb.create_meshset()
-neumann_meshset = M1.mb.create_meshset()
 wells_meshset = M1.mb.create_meshset()
 
-M1.mb.add_entities(dirichlet_meshset, volumes_d)
-M1.mb.add_entities(neumann_meshset, volumes_n)
-M1.mb.add_entities(wells_meshset, volumes_n + volumes_n)
-
-
-
-M1.mb.tag_set_data(M1.wells_neumann_tag, 0, neumann_meshset)
-M1.mb.tag_set_data(M1.wells_dirichlet_tag, 0, dirichlet_meshset)
-M1.mb.tag_set_data(M1.wells_tag, 0, wells_meshset)
-M1.mb.tag_set_data(M1.press_value_tag, volumes_d[0], press[0])
-M1.mb.tag_set_data(M1.vazao_value_tag, volumes_n[0], vazao[0])
 # import pdb; pdb.set_trace()
 # mesh1 = M1.mb.tag_get_data(M1.wells_neumann_tag, 0, flat=True)[0]
 # print(mesh1)
@@ -392,6 +376,44 @@ lx2, ly2, lz2 = [], [], []
 for i in range(int(Lx/l2+1.01)):    lx2.append(xmin+i*l2)
 for i in range(int(Ly/l2+1.01)):    ly2.append(ymin+i*l2)
 for i in range(int(Lz/l2+1.01)):    lz2.append(zmin+i*l2)
+
+#-------------------------------------------------------------------------------
+
+press = 1.0
+vazao = 1.0
+dirichlet_meshset = M1.mb.create_meshset()
+neumann_meshset = M1.mb.create_meshset()
+
+
+volumes_d = []
+volumes_n = []
+all_boundary_faces=M1.mb.tag_get_data(M1.all_faces_boundary_tag, 0, flat=True)
+for v in all_volumes:
+    #v = M1.mtu.get_bridge_adjacencies(f,2,3)
+    if Min_Max(v)[0]-0.00001<xmin:
+        volumes_d.append(v)
+        wells.append(v)
+    elif Min_Max(v)[1]+0.00001>xmin+Lx:
+        volumes_n.append(v)
+        wells.append(v)
+
+M1.mb.add_entities(dirichlet_meshset, volumes_d)
+M1.mb.add_entities(neumann_meshset, volumes_n)
+M1.mb.add_entities(wells_meshset, volumes_n + volumes_n)
+
+neumann=M1.mb.tag_get_handle("neumann", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
+dirichlet=M1.mb.tag_get_handle("dirichlet", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
+M1.mb.tag_set_data(neumann, volumes_n, np.repeat(1, len(volumes_n)))
+M1.mb.tag_set_data(dirichlet, volumes_d, np.repeat(1, len(volumes_d)))
+
+M1.mb.tag_set_data(M1.wells_neumann_tag, 0, neumann_meshset)
+M1.mb.tag_set_data(M1.wells_dirichlet_tag, 0, dirichlet_meshset)
+M1.mb.tag_set_data(M1.wells_tag, 0, wells_meshset)
+M1.mb.tag_set_data(M1.press_value_tag, volumes_d, np.repeat(press, len(volumes_d)))
+M1.mb.tag_set_data(M1.vazao_value_tag, volumes_n, np.repeat(vazao, len(volumes_n)))
+
+
+
 #-------------------------------------------------------------------------------
 
 lxd2=[lx2[0]+l1/2]
