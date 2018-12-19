@@ -49,7 +49,6 @@ class MeshManager:
         self.set_information("PERM", self.all_volumes, 3)
         self.get_boundary_faces()
 
-
     def create_tags(self):
         print("criou tags")
         self.perm_tag = self.mb.tag_get_handle("PERM", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
@@ -208,7 +207,6 @@ class MeshManager:
                 self.mb.add_entities(all_boundary_faces, [face])
 
         self.mb.tag_set_data(self.all_faces_boundary_tag, 0, all_boundary_faces)
-
 
     @staticmethod
     def point_distance(coords_1, coords_2):
@@ -379,7 +377,7 @@ for i in range(int(Lz/l2+1.01)):    lz2.append(zmin+i*l2)
 
 #-------------------------------------------------------------------------------
 
-press = 1.0
+press = 100.0
 vazao = 1.0
 dirichlet_meshset = M1.mb.create_meshset()
 neumann_meshset = M1.mb.create_meshset()
@@ -397,19 +395,32 @@ for v in all_volumes:
         volumes_n.append(v)
         wells.append(v)
 
+#peso especifico
+gama = 10
+pressao = []
+
+z_elems_d = -1*np.array([M1.mtu.get_average_position([v])[2] for v in volumes_d])
+delta_z = z_elems_d + Lz
+
+pressao = gama*(delta_z) + press
+
 M1.mb.add_entities(dirichlet_meshset, volumes_d)
 M1.mb.add_entities(neumann_meshset, volumes_n)
 M1.mb.add_entities(wells_meshset, volumes_n + volumes_n)
 
-neumann=M1.mb.tag_get_handle("neumann", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
-dirichlet=M1.mb.tag_get_handle("dirichlet", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
+#########################################################################################
+#jp: modifiquei as tags para sparse
+neumann=M1.mb.tag_get_handle("neumann", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+dirichlet=M1.mb.tag_get_handle("dirichlet", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+###############################################################################################
+
 M1.mb.tag_set_data(neumann, volumes_n, np.repeat(1, len(volumes_n)))
 M1.mb.tag_set_data(dirichlet, volumes_d, np.repeat(1, len(volumes_d)))
 
 M1.mb.tag_set_data(M1.wells_neumann_tag, 0, neumann_meshset)
 M1.mb.tag_set_data(M1.wells_dirichlet_tag, 0, dirichlet_meshset)
 M1.mb.tag_set_data(M1.wells_tag, 0, wells_meshset)
-M1.mb.tag_set_data(M1.press_value_tag, volumes_d, np.repeat(press, len(volumes_d)))
+M1.mb.tag_set_data(M1.press_value_tag, volumes_d, pressao)
 M1.mb.tag_set_data(M1.vazao_value_tag, volumes_n, np.repeat(vazao, len(volumes_n)))
 
 
@@ -498,8 +509,12 @@ t0=time.time()
 L2_meshset=M1.mb.create_meshset()       # root Meshset
 D2_meshset=M1.mb.create_meshset()
 
-D1_tag=M1.mb.tag_get_handle("d1", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DENSE, True)
-D2_tag=M1.mb.tag_get_handle("d2", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_DENSE, True)
+###########################################################################################
+#jp:modifiquei as tags abaixo para sparse
+D1_tag=M1.mb.tag_get_handle("d1", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+D2_tag=M1.mb.tag_get_handle("d2", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+##########################################################################################
+
 fine_to_primal1_classic_tag = M1.mb.tag_get_handle("FINE_TO_PRIMAL1_CLASSIC", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
 fine_to_primal2_classic_tag = M1.mb.tag_get_handle("FINE_TO_PRIMAL2_CLASSIC", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
 AV_meshset=M1.mb.create_meshset()
@@ -646,14 +661,17 @@ t0=time.time()
 # Esse bloco é executado uma vez a cada iteração em um problema bifásico,
 # sua eficiência é criticamente importante.
 
+##########################################################################################
 # Tag que armazena o ID do volume no nível 1
-L1_ID_tag=M1.mb.tag_get_handle("l1_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
-L1ID_tag=M1.mb.tag_get_handle("l1ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
+# jp: modifiquei as tags abaixo para o tipo sparse
+L1_ID_tag=M1.mb.tag_get_handle("l1_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+# L1ID_tag=M1.mb.tag_get_handle("l1ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
 # Tag que armazena o ID do volume no nível 2
-L2_ID_tag=M1.mb.tag_get_handle("l2_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
-L2ID_tag=M1.mb.tag_get_handle("l2ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
+L2_ID_tag=M1.mb.tag_get_handle("l2_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+# L2ID_tag=M1.mb.tag_get_handle("l2ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
 # ni = ID do elemento no nível i
-L3_ID_tag=M1.mb.tag_get_handle("l3_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_DENSE, True)
+L3_ID_tag=M1.mb.tag_get_handle("l3_ID", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+##########################################################################################
 # ni = ID do elemento no nível i
 n1=0
 n2=0
@@ -733,8 +751,22 @@ for v in all_volumes:
     M1.mb.add_entities(av,[v])
 print('Criação dos operadores: ',time.time()-t0)
 
+
+gids_tag = M1.mb.tag_get_handle("GLOBAL_ID")
+
+tags = [gids_tag, L1_ID_tag, L2_ID_tag]
+
+for tag in tags:
+    all_gids = M1.mb.tag_get_data(tag, M1.all_volumes, flat=True)
+    minim = min(all_gids)
+    all_gids -= minim
+    M1.mb.tag_set_data(tag, M1.all_volumes, all_gids)
+
 M1.mb.write_file("9x27x27.h5m")
 M1.mb.write_file("9x27x27.vtk")
 #M1.imprima("9x36x36")
 #M1.mb.write_file('teste_3D_unstructured_18.vtk',[av])
+
+
+
 print('New file created')

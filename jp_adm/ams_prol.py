@@ -41,6 +41,7 @@ class AMS_prol:
         self.all_volumes = self.mb.get_entities_by_dimension(self.root_set, 3)
 
         self.all_faces = self.mb.get_entities_by_dimension(self.root_set, 2)
+        self.all_edges = self.mb.get_entities_by_dimension(self.root_set, 1)
         self.nf = len(self.all_volumes)
         self.create_tags()
         self.get_wells()
@@ -54,27 +55,6 @@ class AMS_prol:
         self.primals2 = self.mb.get_entities_by_type_and_tag(
             self.root_set, types.MBENTITYSET, np.array([self.prilmal_ids2_tag]),
             np.array([None]))
-
-        all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat=True)
-        minim = min(all_gids)
-        all_gids = all_gids - minim
-        self.mb.tag_set_data(self.global_id0_tag, self.all_volumes, all_gids)
-
-        ids_nv1 = self.mb.tag_get_data(self.L1_tag, self.all_volumes, flat=True)
-        minim = min(ids_nv1)
-        ids_nv1 -= minim
-        self.mb.tag_set_data(self.L1_tag, self.all_volumes, ids_nv1)
-
-        ids_nv2 = self.mb.tag_get_data(self.L2_tag, self.all_volumes, flat=True)
-        minim = min(ids_nv2)
-        ids_nv2 -= minim
-        self.mb.tag_set_data(self.L2_tag, self.all_volumes, ids_nv2)
-
-        ids_adm = self.mb.tag_get_data(self.L2_tag, self.all_volumes, flat=True)
-        minim = min(ids_adm)
-        ids_adm -= minim
-        self.mb.tag_set_data(self.L2_tag, self.all_volumes, ids_adm)
-
 
         Lx = 27
         Ly = 27
@@ -1071,9 +1051,10 @@ class AMS_prol:
 
     def set_erro(self):
         pf = self.load_array('pf.npy')
+        pf += 1e-16
         pms = self.load_array('pms.npy')
 
-        erro = pf - pms
+        erro = 100*np.absolute(pf - pms)/pf
 
         self.mb.tag_set_data(self.erro_tag, self.all_volumes, erro)
 
@@ -1451,23 +1432,23 @@ class AMS_prol:
         t2 = time.time()
         print('took:{0}\n'.format(t2-t1))
 
-        print('solucao_direta')
-        t1 = time.time()
-        self.solucao_direta()
-        t2 = time.time()
-        print('took:{0}\n'.format(t2-t1))
-
-        print('solucao_multiescala')
-        t1 = time.time()
-        self.solucao_multiescala()
-        t2 = time.time()
-        print('took:{0}\n'.format(t2-t1))
+        # print('solucao_direta')
+        # t1 = time.time()
+        # self.solucao_direta()
+        # t2 = time.time()
+        # print('took:{0}\n'.format(t2-t1))
         #
-        print('erro')
-        t1 = time.time()
-        self.set_erro()
-        t2 = time.time()
-        print('took:{0}\n'.format(t2-t1))
+        # print('solucao_multiescala')
+        # t1 = time.time()
+        # self.solucao_multiescala()
+        # t2 = time.time()
+        # print('took:{0}\n'.format(t2-t1))
+        # #
+        # print('erro')
+        # t1 = time.time()
+        # self.set_erro()
+        # t2 = time.time()
+        # print('took:{0}\n'.format(t2-t1))
 
         # self.set_PMS()
         # self.set_PF()
@@ -1496,11 +1477,15 @@ class AMS_prol:
         # # import pdb; pdb.set_trace()
         ###################################################################
 
-        # print('writting vtk file')
-        # t1 = time.time()
-        # self.mb.write_file('9x27x27_out_adm.vtk')
-        # t2 = time.time()
-        # print('took:{0}\n'.format(t2-t1))
+    def write_VTK(self, name):
+
+
+
+        print('writting vtk file')
+        t1 = time.time()
+        self.mb.write_file(name)
+        t2 = time.time()
+        print('took:{0}\n'.format(t2-t1))
 
     def test_OP_tril(self, ind1 = None, ind2 = None):
         lim = 1e-7
@@ -1545,4 +1530,22 @@ class AMS_prol:
 
 inputfile = '9x27x27.h5m'
 sim = AMS_prol(inputfile)
+
+################################################
+# rodar essa parte primeiro para obter as saidas
 sim.run()
+sim.solucao_direta()
+sim.solucao_multiescala()
+##########################################
+
+#########################################
+# # setar as saidas
+
+# sim.mb.delete_entities(sim.all_faces)
+# sim.mb.delete_entities(sim.all_edges)
+# sim.set_PF()
+# sim.set_PMS()
+# sim.set_erro()
+# name = '9x27x27_out_adm.vtk'
+# sim.write_VTK(name)
+##############################################

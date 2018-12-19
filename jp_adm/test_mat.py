@@ -81,7 +81,7 @@ class testing:
         self.pf = self.load_array('pf.npy')
         self.pms = self.load_array('pms.npy')
 
-        self.erro = (self.pf - self.pms)
+        self.erro = np.absolute(self.pf - self.pms)/self.pf
 
     def test_pc(self):
         self.pc = self.load_array('pc.npy')
