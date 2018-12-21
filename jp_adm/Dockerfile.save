@@ -1,0 +1,2 @@
+docker run -it -v  $PWD:/elliptic padmec/pymoab-pytrilinos:3.6 bash -c "cd /elliptic; bash"
+

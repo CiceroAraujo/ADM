@@ -125,9 +125,10 @@ class AMS_prol:
         coarse_elems = rng.subtract(self.all_volumes, elems_nv0)
         gids_adm_coarse_elems = set(self.mb.tag_get_data(self.L2_tag, coarse_elems, flat=True))
 
-        self.set_q_pms_coarse(intersect_faces_adm, gids_adm_coarse_elems)
+        self.set_q_pms_coarse(intersect_faces_adm, gids_adm_coarse_elems, elems_nv0, set(all_faces_boundary_set))
 
         #calculo da pressao corrigida
+
         for i in gids_adm_coarse_elems:
             linesM = np.array([])
             colsM = np.array([])
@@ -140,9 +141,9 @@ class AMS_prol:
             elems_in_primal = self.mb.get_entities_by_type_and_tag(
                 self.root_set, types.MBHEX, self.L2_tag,
                 np.array([i]))
+
             n = len(elems_in_primal)
             szM = [n, n]
-
             map_local = dict(zip(elems_in_primal, range(n)))
             std_map = Epetra.Map(n, 0, self.comm)
             b = Epetra.Vector(std_map)
@@ -152,7 +153,7 @@ class AMS_prol:
                 if face in boundary_faces_coarse:
                     elem = list(rng.intersect(elems_in_primal, elems))[0]
                     qpms = self.mb.tag_get_data(self.q_pms_coarse_tag, elem, flat=True)[0]
-                    b[map_local[elem]] += qpms + s_grav
+                    b[map_local[elem]] += qpms
 
                 else:
                     linesM = np.append(linesM, [map_local[elems[0]], map_local[elems[1]]])
@@ -173,8 +174,9 @@ class AMS_prol:
                     else:
                         valuesM2[ind1] += keq
 
-                    b[map_local[elems[0]]] += s_grav
-                    b[map_local[elems[1]]] -= s_grav
+                    # # com gravidade
+                    # b[map_local[elems[0]]] += s_grav
+                    # b[map_local[elems[1]]] -= s_grav
 
             linesM = np.append(linesM, linesM2)
             colsM = np.append(colsM, linesM2)
@@ -189,31 +191,20 @@ class AMS_prol:
             # elems_boundary_d = (set(self.wells_d) & set(elems_in_primal)) | (set(self.vertex_elems) & set(elems_in_primal))
             elems_boundary_d = set(self.vertex_elems) & set(elems_in_primal)
 
-            # #elementos com vazao prescrita
-            # elems_boundary_n = set(self.wells_n) & set(elems_in_primal)
+            for v in elems_boundary_d:
+                id_local = map_local[v]
+                indices = np.where(inds2[0] == id_local)[0]
+                inds2[0] = np.delete(inds2[0], indices)
+                inds2[1] = np.delete(inds2[1], indices)
+                inds2[2] = np.delete(inds2[2], indices)
 
-            if len(elems_boundary_d) > 0:
-                for v in elems_boundary_d:
-                    id_local = map_local[v]
-                    indices = np.where(inds2[0] == id_local)[0]
-                    inds2[0] = np.delete(inds2[0], indices)
-                    inds2[1] = np.delete(inds2[1], indices)
-                    inds2[2] = np.delete(inds2[2], indices)
-
-                    inds2[0] = np.append(inds2[0], np.array([id_local]))
-                    inds2[1] = np.append(inds2[1], np.array([id_local]))
-                    inds2[2] = np.append(inds2[2], np.array([1.0]))
-                    b[id_local] = self.mb.tag_get_data(self.pms_tag, v, flat=True)[0]
-
-            # if len(elems_boundary_n) > 0:
-            #     for v in elems_boundary_n:
-            #         id_local = map_local[v]
-            #         b2[id_local] += self.mb.tag_get_data(self.q_tag, v, flat=True)[0]
-
+                inds2[0] = np.append(inds2[0], np.array([id_local]))
+                inds2[1] = np.append(inds2[1], np.array([id_local]))
+                inds2[2] = np.append(inds2[2], np.array([1.0]))
+                b[id_local] = self.mb.tag_get_data(self.pms_tag, v, flat=True)[0]
 
             inds2[0] = inds2[0].astype(np.int32)
             inds2[1] = inds2[1].astype(np.int32)
-
 
             A = self.get_CrsMatrix_by_inds(inds2)
             x = self.solve_linear_problem(A, b, n)
@@ -221,8 +212,13 @@ class AMS_prol:
 
 
 
+        # para os elementos no nivel 0 a pressao corrigida eh a propria pms
+        pcorr = self.mb.tag_get_data(self.pms_tag, elems_nv0, flat=True)
+        self.mb.tag_set_data(self.pcorr_tag, elems_nv0, pcorr)
         pcorr = self.mb.tag_get_data(self.pcorr_tag, self.all_volumes, flat=True)
+
         self.write_array('pcorr', np.asarray(pcorr))
+        self.fine_flux_pms(intersect_faces_adm, all_faces_adm, elems_nv0)
 
     def create_elems_wirebasket(self):
         all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat = True)
@@ -303,10 +299,18 @@ class AMS_prol:
         self.pms_tag = self.mb.tag_get_handle("PMS", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.erro_tag = self.mb.tag_get_handle("ERRO", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.q_pf_tag = self.mb.tag_get_handle("Q_PF", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        self.q_pms_tag = self.mb.tag_get_handle("Q_PMS", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.pcorr_tag = self.mb.tag_get_handle("PCORR", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        self.s_grav_tag = self.mb.tag_get_handle("S_GRAV", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        self.keq_tag = self.mb.tag_get_handle("K_EQ", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.q_pms_coarse_tag = self.mb.tag_get_handle("Q_PMS_COARSE", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        self.q_coarse_tag = self.mb.tag_get_handle("Q_COARSE", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.vert_to_col_tag = self.mb.tag_get_handle("VERT_TO_COL", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
         # self.id_wells_tag = self.mb.tag_get_handle("I", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+
+    def delete_tag_op1(self):
+        for i in range(self.nc1):
+            tag = self.mb.tag_get_handle("OP")
 
     def fine_flux_pf(self):
         """
@@ -352,6 +356,56 @@ class AMS_prol:
         self.write_array('fine_flux_pf', fine_flux_pf)
 
         print('took:{0}\n'.format(t1-t0))
+
+    def fine_flux_pms(self, boundary_faces_coarse, all_faces_coarse, elems_nv0):
+        """
+        fluxo da malha fina com solucao multiescala
+        """
+        all_faces_boundary_set = self.mb.tag_get_data(self.all_faces_boundary_tag, 0, flat=True)[0]
+        all_faces_boundary_set = set(self.mb.get_entities_by_handle(all_faces_boundary_set))
+        my_faces = set()
+        all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat=True)
+        map_gids = dict(zip(self.all_volumes, all_gids))
+        qpms_fine = np.zeros(len(self.all_volumes))
+        n = len(boundary_faces_coarse)
+
+        for i in range(n):
+            #1
+            q_coarse = 0
+            bound_faces = boundary_faces_coarse[i]
+            all_faces = all_faces_coarse[i]
+            for face in set(all_faces) - all_faces_boundary_set:
+                #2
+                if face in my_faces:
+                    continue
+                keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
+                if face in bound_faces:
+                    #3
+                    qpms = self.mb.tag_get_data(self.q_pms_coarse_tag, elems, flat=True)
+                    qpms_fine[map_gids[elems[0]]] += qpms[0]
+                    qpms_fine[map_gids[elems[1]]] += qpms[1]
+                else:
+                    pcorr = self.mb.tag_get_data(self.pcorr_tag, elems, flat=True)
+                    # # sem gravidade
+                    flux = (pcorr[1] - pcorr[0])*keq
+
+                    # # com gravidade
+                    # flux = (pcorr[1] - pcorr[0])*keq + s_grav
+
+                    qpms_fine[map_gids[elems[0]]] += flux
+                    qpms_fine[map_gids[elems[1]]] -= flux
+
+            my_faces = my_faces | set(bound_faces)
+
+
+        qpms = self.mb.tag_get_data(self.q_pms_coarse_tag, elems_nv0, flat = True)
+        gids = self.mb.tag_get_data(self.global_id0_tag, elems_nv0, flat = True)
+        qpms_fine[gids] = qpms
+        print(sum(qpms_fine))
+        import pdb; pdb.set_trace()
+
+        self.mb.tag_set_data(self.q_pms_tag, self.all_volumes, qpms_fine)
+        self.write_array('qpms_fine', qpms_fine)
 
     def get_CrsMatrix_by_array(self, M, n_rows = None, n_cols = None):
         """
@@ -880,14 +934,17 @@ class AMS_prol:
                 self.root_set, types.MBHEX, self.L1_tag,
                 np.array([i]))
             gid_vol = self.mb.tag_get_data(self.global_id0_tag, elems, flat=True)
-            op_adm_tag = self.mb.tag_get_handle(
-                "OP_ADM{0}".format(i), 1, types.MB_TYPE_DOUBLE, True,
-                types.MB_TAG_SPARSE, default_value=0.0)
 
             indices = np.where(cols_op == i)[0]
+            if len(indices) < 2:
+                continue
             lines = lines_op[indices]
             vals = vals_op[indices]
             fine_elems = [map_gids[j] for j in lines]
+
+            op_adm_tag = self.mb.tag_get_handle(
+                "OP_ADM{0}".format(i), 1, types.MB_TYPE_DOUBLE, True,
+                types.MB_TAG_SPARSE, default_value=0.0)
 
             self.mb.tag_set_data(op_adm_tag, fine_elems, vals)
 
@@ -1051,7 +1108,7 @@ class AMS_prol:
 
     def set_erro(self):
         pf = self.load_array('pf.npy')
-        pf += 1e-16
+        pf += 1e-14
         pms = self.load_array('pms.npy')
 
         erro = 100*np.absolute(pf - pms)/pf
@@ -1077,6 +1134,9 @@ class AMS_prol:
         obs: com funcao para obter dados dos elementos
         """
         #0
+        all_keqs = []
+        all_faces_int = []
+        all_s_grav = []
         nf = len(map_global)
         linesM = np.array([], dtype=np.int32)
         colsM = linesM.copy()
@@ -1101,6 +1161,9 @@ class AMS_prol:
         for face in set(self.all_faces) - set(all_faces_boundary_set):
             #1
             keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
+            all_keqs.append(keq)
+            all_s_grav.append(s_grav)
+            all_faces_int.append(face)
 
             linesM = np.append(linesM, [map_global[elems[0]], map_global[elems[1]]])
             colsM = np.append(colsM, [map_global[elems[1]], map_global[elems[0]]])
@@ -1133,6 +1196,9 @@ class AMS_prol:
         colsM = colsM.astype(np.int32)
 
         inds = np.array([linesM, colsM, valuesM, szM])
+
+        self.mb.tag_set_data(self.keq_tag, all_faces_int, all_keqs)
+        self.mb.tag_set_data(self.s_grav_tag, all_faces_int, all_s_grav)
 
 
         return  b, s, inds
@@ -1277,25 +1343,59 @@ class AMS_prol:
         qf = self.load_array('fine_flux_pf.npy')
         self.mb.tag_set_data(self.q_pf_tag, self.all_volumes, qf)
 
-    def set_q_pms_coarse(self, intersect_faces, gids_coarse):
+    def set_q_pms_coarse(self, intersect_faces, gids_coarse, elems_nv0, all_faces_boundary_set):
         """
         seta o fluxo multiescala na interface dos volumes que foram engrossados
+        e nos volumes que nao foram engrossados
         """
 
         my_faces = set()
+        Q_coarse = {}
 
         for i in gids_coarse:
             faces = intersect_faces[i]
+            faces = set(faces) - all_faces_boundary_set
             for face in faces:
                 if face in my_faces:
                     continue
                 my_faces.add(face)
                 keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
                 pms = self.mb.tag_get_data(self.pms_tag, elems, flat=True)
+
+                # sem gravidade
                 flux = (pms[1] - pms[0])*keq
-                q0 = flux + s_grav
-                q1 = -(flux + s_grav)
-                self.mb.tag_set_data(self.q_pms_coarse_tag, elems, [q0, q1])
+
+                # # com gravidade
+                # flux = (pms[1] - pms[0])*keq + s_grav
+
+                q0 = flux
+                q1 = -flux
+
+                #########################################
+                ## debug
+                # # set Q_coarse
+                c_gids = self.mb.tag_get_data(self.L2_tag, elems, flat=True)
+                if elems[0] not in elems_nv0:
+                    self.mb.tag_set_data(self.q_pms_coarse_tag, elems[0], q0)
+                    try:
+                        Q_coarse[c_gids[0]] += q0
+                    except KeyError:
+                        Q_coarse[c_gids[0]] = q0
+                if elems[1] not in elems_nv0:
+                    self.mb.tag_set_data(self.q_pms_coarse_tag, elems[1], q1)
+                    try:
+                        Q_coarse[c_gids[1]] += q1
+                    except KeyError:
+                        Q_coarse[c_gids[1]] = q1
+
+                #########################################
+
+        for i in Q_coarse.keys():
+            elems = self.mb.get_entities_by_type_and_tag(
+                self.root_set, types.MBHEX, self.L2_tag,
+                np.array([i]))
+
+            self.mb.tag_set_data(self.q_coarse_tag, elems, np.repeat(Q_coarse[i], len(elems)))
 
     def solucao_direta(self):
 
@@ -1304,6 +1404,10 @@ class AMS_prol:
         print('trasnsfine')
         bf, sf, indsf = self.set_global_problem_AMS_gr_faces(map_global)
         print('set_boundary')
+
+        std_map = Epetra.Map(self.nf, 0, self.comm)
+        bf = Epetra.Vector(std_map)
+
         bf, indsf = self.set_boundary(bf, indsf)
         # np.save('b', bf)
         self.write_array('b', bf)
@@ -1312,13 +1416,15 @@ class AMS_prol:
         A = self.get_CrsMatrix_by_inds(indsf)
         print('solve')
         x = self.solve_linear_problem(A, bf, self.nf)
-        print('setting pf')
-        self.mb.tag_set_data(self.pf_tag, self.all_volumes, np.asarray(x))
+        # print('setting pf')
+        # self.mb.tag_set_data(self.pf_tag, self.all_volumes, np.asarray(x))
         # np.save('pf', np.asarray(x))
         self.write_array('pf', np.asarray(x))
-        self.fine_flux_pf()
+        # self.fine_flux_pf()
 
     def solucao_multiescala(self):
+
+        print('solucao multiescala')
 
         all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat = True)
         map_global = dict(zip(self.all_volumes, all_gids))
@@ -1335,6 +1441,8 @@ class AMS_prol:
         op = self.get_CrsMatrix_by_inds(op)
         or1 = self.get_CrsMatrix_by_inds(or1)
         bf, s, inds_transfine = self.set_global_problem_AMS_gr_faces(map_global)
+        std_map = Epetra.Map(self.nf, 0, self.comm)
+        bf = Epetra.Vector(std_map)
         bf, inds_transfine = self.set_boundary(bf, inds_transfine)
 
         transfine = self.get_CrsMatrix_by_inds(inds_transfine)
@@ -1406,13 +1514,13 @@ class AMS_prol:
         # # self.trans_mod = self.get_CrsMatrix_by_inds(inds_transmod)
         self.trans_mod = np.zeros((self.nf, self.nf), dtype=np.float64)
         self.trans_mod[inds_transmod[0], inds_transmod[1]] = inds_transmod[2]
-        self.G, self.GT = self.permutation_matrix()
+        # self.G, self.GT = self.permutation_matrix()
 
-        print('get_op_ams')
-        t1 = time.time()
-        self.get_OP()
-        t2 = time.time()
-        print('took:{0}\n'.format(t2-t1))
+        # print('get_op_ams')
+        # t1 = time.time()
+        # self.get_OP()
+        # t2 = time.time()
+        # print('took:{0}\n'.format(t2-t1))
 
         # print('setting_op_ams')
         # t1 = time.time()
@@ -1420,12 +1528,12 @@ class AMS_prol:
         # t2 = time.time()
         # print('took:{0}\n'.format(t2-t1))
 
-        print('getting op_adm')
-        t1 = time.time()
-        self.organize_op1()
-        t2 = time.time()
-        print('took:{0}\n'.format(t2-t1))
-
+        # print('getting op_adm')
+        # t1 = time.time()
+        # self.organize_op1()
+        # t2 = time.time()
+        # print('took:{0}\n'.format(t2-t1))
+        #
         print('getting or adm')
         t1 = time.time()
         self.get_OR_ADM()
@@ -1530,12 +1638,22 @@ class AMS_prol:
 
 inputfile = '9x27x27.h5m'
 sim = AMS_prol(inputfile)
+sim.set_PMS()
+sim.correcao_do_fluxo()
 
 ################################################
 # rodar essa parte primeiro para obter as saidas
-sim.run()
-sim.solucao_direta()
-sim.solucao_multiescala()
+# sim.run()
+# sim.solucao_direta()
+# sim.solucao_multiescala()
+#########################################################
+
+##########################################
+# escrever
+sim.mb.delete_entities(sim.all_faces)
+sim.mb.delete_entities(sim.all_edges)
+name = '9x27x27_out_qpms_fine_adm.vtk'
+sim.write_VTK(name)
 ##########################################
 
 #########################################

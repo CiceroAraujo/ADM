@@ -397,12 +397,17 @@ for v in all_volumes:
 
 #peso especifico
 gama = 10
-pressao = []
 
-z_elems_d = -1*np.array([M1.mtu.get_average_position([v])[2] for v in volumes_d])
-delta_z = z_elems_d + Lz
+pressao = np.repeat(press, len(volumes_d))
 
-pressao = gama*(delta_z) + press
+###############################
+# # colocar gravidade
+# pressao = []
+# z_elems_d = -1*np.array([M1.mtu.get_average_position([v])[2] for v in volumes_d])
+# delta_z = z_elems_d + Lz
+#
+# pressao = gama*(delta_z) + press
+###############################################
 
 M1.mb.add_entities(dirichlet_meshset, volumes_d)
 M1.mb.add_entities(neumann_meshset, volumes_n)
