@@ -77,6 +77,143 @@ class AMS_prol:
 
         # self.run()
 
+    def calculo_pressao_corrigida(self, gids_adm_coarse_elems, all_faces_adm, intersect_faces_adm, all_faces_boundary_set, elems_nv0):
+
+        for i in gids_adm_coarse_elems:
+            linesM = np.array([])
+            colsM = np.array([])
+            valuesM = np.array([], dtype=np.float64)
+            linesM2 = linesM.copy()
+            valuesM2 = valuesM.copy()
+
+            all_faces_coarse = all_faces_adm[i]
+            boundary_faces_coarse = intersect_faces_adm[i]
+            elems_in_primal = self.mb.get_entities_by_type_and_tag(
+                self.root_set, types.MBHEX, self.L2_tag,
+                np.array([i]))
+
+            n = len(elems_in_primal)
+            qpms_local = np.zeros(n)
+            soma = 0.0
+            szM = [n, n]
+            map_local = dict(zip(elems_in_primal, range(n)))
+            std_map = Epetra.Map(n, 0, self.comm)
+            b = Epetra.Vector(std_map)
+
+            for face in set(all_faces_coarse) - all_faces_boundary_set:
+                keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
+                if face in boundary_faces_coarse:
+                    pms = self.mb.tag_get_data(self.pms_tag, elems, flat=True)
+                    # # sem gravidade
+                    qpms = (pms[1] - pms[0])*keq
+                    # # com gravidade
+                    # qpms = (pms[1] - pms[0])*keq + s_grav
+                    if elems[0] in elems_in_primal:
+                        b[map_local[elems[0]]] += qpms
+                        soma += qpms
+                    else:
+                        b[map_local[elems[1]]] -= qpms
+                        soma -= qpms
+                else:
+                    linesM = np.append(linesM, [map_local[elems[0]], map_local[elems[1]]])
+                    colsM = np.append(colsM, [map_local[elems[1]], map_local[elems[0]]])
+                    valuesM = np.append(valuesM, [-keq, -keq])
+
+                    ind0 = np.where(linesM2 == map_local[elems[0]])
+                    if len(ind0[0]) == 0:
+                        linesM2 = np.append(linesM2, map_local[elems[0]])
+                        valuesM2 = np.append(valuesM2, [keq])
+                    else:
+                        valuesM2[ind0] += keq
+
+                    ind1 = np.where(linesM2 == map_local[elems[1]])
+                    if len(ind1[0]) == 0:
+                        linesM2 = np.append(linesM2, map_local[elems[1]])
+                        valuesM2 = np.append(valuesM2, [keq])
+                    else:
+                        valuesM2[ind1] += keq
+
+                    # # com gravidade
+                    # b[map_local[elems[0]]] += s_grav
+                    # b[map_local[elems[1]]] -= s_grav
+
+            lim = 1e-10
+            if abs(soma) > lim:
+                print('fluxo na malha grossa maior que zero')
+                print(soma)
+                import pdb; pdb.set_trace()
+
+
+            linesM = np.append(linesM, linesM2)
+            colsM = np.append(colsM, linesM2)
+            valuesM = np.append(valuesM, valuesM2)
+
+            # linesM = linesM.astype(np.int32)
+            # colsM = colsM.astype(np.int32)
+
+            inds2 = np.array([linesM, colsM, valuesM, szM])
+
+            #elementos com pressao prescrita
+            # elems_boundary_d = (set(self.wells_d) & set(elems_in_primal)) | (set(self.vertex_elems) & set(elems_in_primal))
+            elems_boundary_d = set(self.vertex_elems) & set(elems_in_primal)
+
+            for v in elems_boundary_d:
+                id_local = map_local[v]
+                indices = np.where(inds2[0] == id_local)[0]
+                inds2[0] = np.delete(inds2[0], indices)
+                inds2[1] = np.delete(inds2[1], indices)
+                inds2[2] = np.delete(inds2[2], indices)
+
+                inds2[0] = np.append(inds2[0], np.array([id_local]))
+                inds2[1] = np.append(inds2[1], np.array([id_local]))
+                inds2[2] = np.append(inds2[2], np.array([1.0]))
+                b[id_local] = self.mb.tag_get_data(self.pms_tag, v, flat=True)[0]
+
+            inds2[0] = inds2[0].astype(np.int32)
+            inds2[1] = inds2[1].astype(np.int32)
+
+            A = self.get_CrsMatrix_by_inds(inds2)
+            x = self.solve_linear_problem(A, b, n)
+            self.mb.tag_set_data(self.pcorr_tag, elems_in_primal, np.asarray(x))
+
+            for face in set(all_faces_coarse) - all_faces_boundary_set:
+                keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
+                if face in boundary_faces_coarse:
+                    pms = self.mb.tag_get_data(self.pms_tag, elems, flat=True)
+                    # # sem gravidade
+                    qpms = (pms[1] - pms[0])*keq
+                    # # com gravidade
+                    # qpms = (pms[1] - pms[0])*keq + s_grav
+                    if elems[0] in elems_in_primal:
+                        qpms_local[map_local[elems[0]]] += qpms
+
+                    else:
+                        qpms_local[map_local[elems[1]]] -= qpms
+                else:
+                    pcorr = self.mb.tag_get_data(self.pcorr_tag, elems, flat=True)
+                    # # sem gravidade
+                    flux = (pcorr[1] - pcorr[0])*keq
+
+                    # # com gravidade
+                    # flux = (pcorr[1] - pcorr[0])*keq + s_grav
+
+                    qpms_local[map_local[elems[0]]] += flux
+                    qpms_local[map_local[elems[1]]] -= flux
+
+            self.mb.tag_set_data(self.q_pms_tag, elems_in_primal, qpms_local)
+            self.mb.tag_set_data(self.q_coarse_tag, elems_in_primal, np.repeat(soma, n))
+
+        # para os elementos no nivel 0 a pressao corrigida eh a propria pms
+        # para facilitar o carregamento se necessario
+        pcorr = self.mb.tag_get_data(self.pms_tag, elems_nv0, flat=True)
+        self.mb.tag_set_data(self.pcorr_tag, elems_nv0, pcorr)
+        pcorr = self.mb.tag_get_data(self.pcorr_tag, self.all_volumes, flat=True)
+
+        self.write_array('pcorr', np.asarray(pcorr))
+        self.mb.tag_set_data(self.q_coarse_tag, elems_nv0, np.repeat(0.0, len(elems_nv0)))
+        q_coarse = self.mb.tag_get_data(self.q_coarse_tag, self.all_volumes, flat=True)
+        self.write_array('q_pms_coarse', q_coarse)
+
     def correcao_do_fluxo(self):
         """
         obtem a pressao corrigida
@@ -125,100 +262,13 @@ class AMS_prol:
         coarse_elems = rng.subtract(self.all_volumes, elems_nv0)
         gids_adm_coarse_elems = set(self.mb.tag_get_data(self.L2_tag, coarse_elems, flat=True))
 
-        self.set_q_pms_coarse(intersect_faces_adm, gids_adm_coarse_elems, elems_nv0, set(all_faces_boundary_set))
+        # self.set_q_pms_coarse(intersect_faces_adm, gids_adm_coarse_elems, elems_nv0, set(all_faces_boundary_set))
 
         #calculo da pressao corrigida
+        self.calculo_pressao_corrigida(gids_adm_coarse_elems, all_faces_adm, intersect_faces_adm, set(all_faces_boundary_set), elems_nv0)
 
-        for i in gids_adm_coarse_elems:
-            linesM = np.array([])
-            colsM = np.array([])
-            valuesM = np.array([], dtype=np.float64)
-            linesM2 = linesM.copy()
-            valuesM2 = valuesM.copy()
-
-            all_faces_coarse = all_faces_adm[i]
-            boundary_faces_coarse = intersect_faces_adm[i]
-            elems_in_primal = self.mb.get_entities_by_type_and_tag(
-                self.root_set, types.MBHEX, self.L2_tag,
-                np.array([i]))
-
-            n = len(elems_in_primal)
-            szM = [n, n]
-            map_local = dict(zip(elems_in_primal, range(n)))
-            std_map = Epetra.Map(n, 0, self.comm)
-            b = Epetra.Vector(std_map)
-
-            for face in set(all_faces_coarse) - set(all_faces_boundary_set):
-                keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
-                if face in boundary_faces_coarse:
-                    elem = list(rng.intersect(elems_in_primal, elems))[0]
-                    qpms = self.mb.tag_get_data(self.q_pms_coarse_tag, elem, flat=True)[0]
-                    b[map_local[elem]] += qpms
-
-                else:
-                    linesM = np.append(linesM, [map_local[elems[0]], map_local[elems[1]]])
-                    colsM = np.append(colsM, [map_local[elems[1]], map_local[elems[0]]])
-                    valuesM = np.append(valuesM, [-keq, -keq])
-
-                    ind0 = np.where(linesM2 == map_local[elems[0]])
-                    if len(ind0[0]) == 0:
-                        linesM2 = np.append(linesM2, map_local[elems[0]])
-                        valuesM2 = np.append(valuesM2, [keq])
-                    else:
-                        valuesM2[ind0] += keq
-
-                    ind1 = np.where(linesM2 == map_local[elems[1]])
-                    if len(ind1[0]) == 0:
-                        linesM2 = np.append(linesM2, map_local[elems[1]])
-                        valuesM2 = np.append(valuesM2, [keq])
-                    else:
-                        valuesM2[ind1] += keq
-
-                    # # com gravidade
-                    # b[map_local[elems[0]]] += s_grav
-                    # b[map_local[elems[1]]] -= s_grav
-
-            linesM = np.append(linesM, linesM2)
-            colsM = np.append(colsM, linesM2)
-            valuesM = np.append(valuesM, valuesM2)
-
-            # linesM = linesM.astype(np.int32)
-            # colsM = colsM.astype(np.int32)
-
-            inds2 = np.array([linesM, colsM, valuesM, szM])
-
-            #elementos com pressao prescrita
-            # elems_boundary_d = (set(self.wells_d) & set(elems_in_primal)) | (set(self.vertex_elems) & set(elems_in_primal))
-            elems_boundary_d = set(self.vertex_elems) & set(elems_in_primal)
-
-            for v in elems_boundary_d:
-                id_local = map_local[v]
-                indices = np.where(inds2[0] == id_local)[0]
-                inds2[0] = np.delete(inds2[0], indices)
-                inds2[1] = np.delete(inds2[1], indices)
-                inds2[2] = np.delete(inds2[2], indices)
-
-                inds2[0] = np.append(inds2[0], np.array([id_local]))
-                inds2[1] = np.append(inds2[1], np.array([id_local]))
-                inds2[2] = np.append(inds2[2], np.array([1.0]))
-                b[id_local] = self.mb.tag_get_data(self.pms_tag, v, flat=True)[0]
-
-            inds2[0] = inds2[0].astype(np.int32)
-            inds2[1] = inds2[1].astype(np.int32)
-
-            A = self.get_CrsMatrix_by_inds(inds2)
-            x = self.solve_linear_problem(A, b, n)
-            self.mb.tag_set_data(self.pcorr_tag, elems_in_primal, np.asarray(x))
-
-
-
-        # para os elementos no nivel 0 a pressao corrigida eh a propria pms
-        pcorr = self.mb.tag_get_data(self.pms_tag, elems_nv0, flat=True)
-        self.mb.tag_set_data(self.pcorr_tag, elems_nv0, pcorr)
-        pcorr = self.mb.tag_get_data(self.pcorr_tag, self.all_volumes, flat=True)
-
-        self.write_array('pcorr', np.asarray(pcorr))
-        self.fine_flux_pms(intersect_faces_adm, all_faces_adm, elems_nv0)
+        # calculo do fluxo multiescala na malha fina
+        self.fine_flux_pms(elems_nv0, set(all_faces_boundary_set))
 
     def create_elems_wirebasket(self):
         all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat = True)
@@ -357,54 +407,33 @@ class AMS_prol:
 
         print('took:{0}\n'.format(t1-t0))
 
-    def fine_flux_pms(self, boundary_faces_coarse, all_faces_coarse, elems_nv0):
+    def fine_flux_pms(self, elems_nv0, all_faces_boundary_set):
         """
         fluxo da malha fina com solucao multiescala
         """
-        all_faces_boundary_set = self.mb.tag_get_data(self.all_faces_boundary_tag, 0, flat=True)[0]
-        all_faces_boundary_set = set(self.mb.get_entities_by_handle(all_faces_boundary_set))
-        my_faces = set()
-        all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat=True)
-        map_gids = dict(zip(self.all_volumes, all_gids))
-        qpms_fine = np.zeros(len(self.all_volumes))
-        n = len(boundary_faces_coarse)
+        #
+        n = len(elems_nv0)
+        qpms_fine = np.zeros(n)
+        map_local = dict(zip(elems_nv0, range(n)))
+        faces_elems_nv0 = self.mtu.get_bridge_adjacencies(elems_nv0, 3, 2)
+        iter_faces = set(faces_elems_nv0) - (all_faces_boundary_set)
 
-        for i in range(n):
-            #1
-            q_coarse = 0
-            bound_faces = boundary_faces_coarse[i]
-            all_faces = all_faces_coarse[i]
-            for face in set(all_faces) - all_faces_boundary_set:
-                #2
-                if face in my_faces:
-                    continue
-                keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
-                if face in bound_faces:
-                    #3
-                    qpms = self.mb.tag_get_data(self.q_pms_coarse_tag, elems, flat=True)
-                    qpms_fine[map_gids[elems[0]]] += qpms[0]
-                    qpms_fine[map_gids[elems[1]]] += qpms[1]
-                else:
-                    pcorr = self.mb.tag_get_data(self.pcorr_tag, elems, flat=True)
-                    # # sem gravidade
-                    flux = (pcorr[1] - pcorr[0])*keq
+        for face in iter_faces:
+            keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
+            pms = self.mb.tag_get_data(self.pms_tag, elems, flat=True)
+            # # sem gravidade
+            flux = (pms[1] - pms[0])*keq
 
-                    # # com gravidade
-                    # flux = (pcorr[1] - pcorr[0])*keq + s_grav
+            # # com gravidade
+            # flux = (pms[1] - pms[0])*keq + s_grav
 
-                    qpms_fine[map_gids[elems[0]]] += flux
-                    qpms_fine[map_gids[elems[1]]] -= flux
+            if elems[0] in elems_nv0:
+                qpms_fine[map_local[elems[0]]] += flux
+            if elems[1] in elems_nv0:
+                qpms_fine[map_local[elems[1]]] -= flux
 
-            my_faces = my_faces | set(bound_faces)
-
-
-        qpms = self.mb.tag_get_data(self.q_pms_coarse_tag, elems_nv0, flat = True)
-        gids = self.mb.tag_get_data(self.global_id0_tag, elems_nv0, flat = True)
-        qpms_fine[gids] = qpms
-        print(sum(qpms_fine))
-        import pdb; pdb.set_trace()
-
-        self.mb.tag_set_data(self.q_pms_tag, self.all_volumes, qpms_fine)
+        self.mb.tag_set_data(self.q_pms_tag, elems_nv0, qpms_fine)
+        qpms_fine = self.mb.tag_get_data(self.q_pms_tag, self.all_volumes, flat=True)
         self.write_array('qpms_fine', qpms_fine)
 
     def get_CrsMatrix_by_array(self, M, n_rows = None, n_cols = None):
@@ -1088,21 +1117,6 @@ class AMS_prol:
                 face = face[0]
                 keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         std_map = Epetra.Map(n_elems_var, 0, self.comm)
         b = Epetra.Vector(std_map)
 
@@ -1251,12 +1265,8 @@ class AMS_prol:
                 gid0 = map_global[elems[0]]
                 gid1 = map_global[elems[1]]
 
-
-
-
             elif elems[1] in self.wells_d:
                 pass
-
 
             else:
 
@@ -1328,6 +1338,12 @@ class AMS_prol:
                 types.MB_TAG_SPARSE, default_value=0.0)
             self.mb.tag_set_data(pc_tag, elems, np.repeat(pc[i], len(elems)))
 
+    def set_Pcorr(self):
+        # pms = np.load('pms.npy')
+        pcorr = self.load_array('pcorr.npy')
+
+        self.mb.tag_set_data(self.pcorr_tag, self.all_volumes, pcorr)
+
     def set_PMS(self):
         # pms = np.load('pms.npy')
         pms = self.load_array('pms.npy')
@@ -1343,59 +1359,9 @@ class AMS_prol:
         qf = self.load_array('fine_flux_pf.npy')
         self.mb.tag_set_data(self.q_pf_tag, self.all_volumes, qf)
 
-    def set_q_pms_coarse(self, intersect_faces, gids_coarse, elems_nv0, all_faces_boundary_set):
-        """
-        seta o fluxo multiescala na interface dos volumes que foram engrossados
-        e nos volumes que nao foram engrossados
-        """
-
-        my_faces = set()
-        Q_coarse = {}
-
-        for i in gids_coarse:
-            faces = intersect_faces[i]
-            faces = set(faces) - all_faces_boundary_set
-            for face in faces:
-                if face in my_faces:
-                    continue
-                my_faces.add(face)
-                keq, s_grav, elems = self.get_kequiv_by_face_quad(face)
-                pms = self.mb.tag_get_data(self.pms_tag, elems, flat=True)
-
-                # sem gravidade
-                flux = (pms[1] - pms[0])*keq
-
-                # # com gravidade
-                # flux = (pms[1] - pms[0])*keq + s_grav
-
-                q0 = flux
-                q1 = -flux
-
-                #########################################
-                ## debug
-                # # set Q_coarse
-                c_gids = self.mb.tag_get_data(self.L2_tag, elems, flat=True)
-                if elems[0] not in elems_nv0:
-                    self.mb.tag_set_data(self.q_pms_coarse_tag, elems[0], q0)
-                    try:
-                        Q_coarse[c_gids[0]] += q0
-                    except KeyError:
-                        Q_coarse[c_gids[0]] = q0
-                if elems[1] not in elems_nv0:
-                    self.mb.tag_set_data(self.q_pms_coarse_tag, elems[1], q1)
-                    try:
-                        Q_coarse[c_gids[1]] += q1
-                    except KeyError:
-                        Q_coarse[c_gids[1]] = q1
-
-                #########################################
-
-        for i in Q_coarse.keys():
-            elems = self.mb.get_entities_by_type_and_tag(
-                self.root_set, types.MBHEX, self.L2_tag,
-                np.array([i]))
-
-            self.mb.tag_set_data(self.q_coarse_tag, elems, np.repeat(Q_coarse[i], len(elems)))
+    def set_QPms(self):
+        qpms = self.load_array('q_pms_coarse.npy')
+        self.mb.tag_set_data(self.q_pms_coarse_tag, self.all_volumes, qpms_coarse)
 
     def solucao_direta(self):
 
@@ -1475,6 +1441,8 @@ class AMS_prol:
         # print('took:{0}\n'.format(t2-t1))
 
     def solve_linear_problem(self, A, b, n):
+        assert A.NumMyCols() == A.NumMyRows()
+        assert A.NumMyCols() == len(b)
 
         if A.Filled():
             pass
