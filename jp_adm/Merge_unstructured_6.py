@@ -2,6 +2,10 @@ import numpy as np
 from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 import time
+import os
+
+parent_dir = os.path.dirname(__file__)
+out_dir = os.path.join(parent_dir, 'output')
 
 class MeshManager:
     def __init__(self,mesh_file, dim=3):
@@ -48,6 +52,8 @@ class MeshManager:
         self.get_faces_boundary()
         self.set_information("PERM", self.all_volumes, 3)
         self.get_boundary_faces()
+        self.gravity = False
+        self.gama = 10
 
     def create_tags(self):
         print("criou tags")
@@ -243,6 +249,20 @@ class MeshManager:
         self.mb.write_file(text3,[m3])
         print(text, "Arquivos gerados")
 
+
+def load_array(name):
+    os.chdir(out_dir)
+    v = np.load(name)
+    os.chdir(parent_dir)
+    return v
+
+def write_array(name, arr):
+    os.chdir(out_dir)
+    np.save(name, arr)
+    os.chdir(parent_dir)
+
+
+
 #--------------Início dos parâmetros de entrada-------------------
 M1= MeshManager('9x27x27.msh')          # Objeto que armazenará as informações da malha
 all_volumes=M1.all_volumes
@@ -385,7 +405,8 @@ neumann_meshset = M1.mb.create_meshset()
 
 volumes_d = []
 volumes_n = []
-all_boundary_faces=M1.mb.tag_get_data(M1.all_faces_boundary_tag, 0, flat=True)
+all_boundary_faces = M1.mb.tag_get_data(M1.all_faces_boundary_tag, 0, flat=True)
+all_boundary_faces = M1.mb.get_entities_by_handle(all_boundary_faces)
 for v in all_volumes:
     #v = M1.mtu.get_bridge_adjacencies(f,2,3)
     if Min_Max(v)[0]-0.00001<xmin:
@@ -395,23 +416,22 @@ for v in all_volumes:
         volumes_n.append(v)
         wells.append(v)
 
-#peso especifico
-gama = 10
+if M1.gravity == False:
+    pressao = np.repeat(press, len(volumes_d))
 
-pressao = np.repeat(press, len(volumes_d))
-
-###############################
 # # colocar gravidade
-# pressao = []
-# z_elems_d = -1*np.array([M1.mtu.get_average_position([v])[2] for v in volumes_d])
-# delta_z = z_elems_d + Lz
-#
-# pressao = gama*(delta_z) + press
+elif M1.gravity == True:
+    pressao = []
+    z_elems_d = -1*np.array([M1.mtu.get_average_position([v])[2] for v in volumes_d])
+    delta_z = z_elems_d + Lz
+    pressao = M1.gama*(delta_z) + press
 ###############################################
+else:
+    print("Defina se existe gravidade (True) ou nao (False)")
 
 M1.mb.add_entities(dirichlet_meshset, volumes_d)
 M1.mb.add_entities(neumann_meshset, volumes_n)
-M1.mb.add_entities(wells_meshset, volumes_n + volumes_n)
+M1.mb.add_entities(wells_meshset, volumes_n + volumes_d)
 
 #########################################################################################
 #jp: modifiquei as tags para sparse
@@ -516,8 +536,8 @@ D2_meshset=M1.mb.create_meshset()
 
 ###########################################################################################
 #jp:modifiquei as tags abaixo para sparse
-D1_tag=M1.mb.tag_get_handle("d1", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
-D2_tag=M1.mb.tag_get_handle("d2", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+D1_tag=M1.mb.tag_get_handle("d1", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+D2_tag=M1.mb.tag_get_handle("d2", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
 ##########################################################################################
 
 fine_to_primal1_classic_tag = M1.mb.tag_get_handle("FINE_TO_PRIMAL1_CLASSIC", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
@@ -536,6 +556,7 @@ for i in range(len(lx2)-1):
     t1=time.time()
     for j in range(len(ly2)-1):
         for k in range(len(lz2)-1):
+            volumes_nv2 = []
             l2_meshset=M1.mb.create_meshset()
             d2_meshset=M1.mb.create_meshset()
             all_volumes=M1.mb.get_entities_by_handle(AV_meshset)
@@ -559,7 +580,7 @@ for i in range(len(lx2)-1):
                             f1a2v3+=1
                         if (centroid[2]-lzd2[k])**2<l1**2/4 or (centroid[2]-lzd2[k+1])**2<l1**2/4:
                             f1a2v3+=1
-                        M1.mb.tag_set_data(D2_tag, elem, np.array([f1a2v3], dtype=np.float))
+                        M1.mb.tag_set_data(D2_tag, elem, np.array([f1a2v3], dtype=np.int32))
                         M1.mb.tag_set_data(fine_to_primal2_classic_tag, elem, nc2)
             M1.mb.add_child_meshset(L2_meshset,l2_meshset)
             sg=M1.mb.get_entities_by_handle(l2_meshset)
@@ -599,7 +620,7 @@ for i in range(len(lx2)-1):
                                         f1a2v3+=1
                                     if (M_M[4]<lzd1[c] and M_M[5]>lzd1[c]) or (M_M[4]<lzd1[c+1] and M_M[5]>lzd1[c+1]):
                                         f1a2v3+=1
-                                    M1.mb.tag_set_data(D1_tag, e, np.array([f1a2v3], dtype=np.float))
+                                    M1.mb.tag_set_data(D1_tag, e, np.array([f1a2v3], dtype=np.int32))
                                     M1.mb.tag_set_data(fine_to_primal1_classic_tag, e, nc1)
 
 
@@ -615,7 +636,7 @@ vert_meshset=M1.mb.create_meshset()
 
 for e in all_volumes:
     elem_tags = M1.mb.tag_get_tags_on_entity(e)
-    print(elem_tags)
+    # print(elem_tags)
     d1_tag = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
     if d1_tag==3:
         M1.mb.add_entities(vert_meshset,[e])
@@ -734,22 +755,24 @@ t0=time.time()
 # Criação e preenchimento do operador de restrição do nível 0 para o nível 1
 print(n1,n2, len(all_volumes))
 
-R01=np.zeros((n1,len(all_volumes)),dtype=np.int)
-for e in all_volumes:
-    elem_tags = M1.mb.tag_get_tags_on_entity(e)
-    elem_Global_ID = int(M1.mb.tag_get_data(elem_tags[0], e, flat=True))
-    elem_ID1 = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
-    R01[elem_ID1-1][elem_Global_ID-G_ID_min]=1
-# ------------------------------------------------------------------------------
-
-
-# Criação e preenchimento do operador de restrição do nível 1 para o nível 2
-R12=np.zeros((n2,n1),dtype=np.int)
-for e in all_volumes:
-    elem_tags = M1.mb.tag_get_tags_on_entity(e)
-    elem_ID1 = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
-    elem_ID2 = int(M1.mb.tag_get_data(elem_tags[3], e, flat=True))
-    R12[elem_ID2-1][elem_ID1-1]=1
+#
+# R01=np.zeros((n1,len(all_volumes)),dtype=np.int)
+# for e in all_volumes:
+#     elem_tags = M1.mb.tag_get_tags_on_entity(e)
+#     elem_Global_ID = int(M1.mb.tag_get_data(elem_tags[0], e, flat=True))
+#     elem_ID1 = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
+#     R01[elem_ID1-1][elem_Global_ID-G_ID_min]=1
+#
+# # ------------------------------------------------------------------------------
+#
+#
+# # Criação e preenchimento do operador de restrição do nível 1 para o nível 2
+# R12=np.zeros((n2,n1),dtype=np.int)
+# for e in all_volumes:
+#     elem_tags = M1.mb.tag_get_tags_on_entity(e)
+#     elem_ID1 = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
+#     elem_ID2 = int(M1.mb.tag_get_data(elem_tags[3], e, flat=True))
+#     R12[elem_ID2-1][elem_ID1-1]=1
 # ------------------------------------------------------------------------------
 av=M1.mb.create_meshset()
 for v in all_volumes:
@@ -757,15 +780,183 @@ for v in all_volumes:
 print('Criação dos operadores: ',time.time()-t0)
 
 
+# modificacao jp
+# todas as modificacoes feitas tambem funcionam para malhas nao estruturadas
+###################################################################################
 gids_tag = M1.mb.tag_get_handle("GLOBAL_ID")
 
 tags = [gids_tag, L1_ID_tag, L2_ID_tag]
 
+# fazendo os ids comecarem de 0 em todos os niveis
 for tag in tags:
     all_gids = M1.mb.tag_get_data(tag, M1.all_volumes, flat=True)
     minim = min(all_gids)
     all_gids -= minim
     M1.mb.tag_set_data(tag, M1.all_volumes, all_gids)
+
+
+# gids_primal1_classic = set(M1.mb.tag_get_data(primal_id_tag1, M1.all_volumes, flat=True))
+
+# volumes da malha grossa primal 1
+meshsets_nv1 = M1.mb.get_entities_by_type_and_tag(
+        M1.root_set, types.MBENTITYSET, np.array([primal_id_tag1]),
+        np.array([None]))
+
+# volumes da malha grossa primal 2
+meshsets_nv2 = M1.mb.get_entities_by_type_and_tag(
+        M1.root_set, types.MBENTITYSET, np.array([primal_id_tag2]),
+        np.array([None]))
+
+# identificar os vizinhos por face nas malhas grossas do ms classico
+
+
+# faces do contorno de cada volume da malha grossa primal 1
+boundary_faces_nv1_tag = M1.mb.tag_get_handle("BOUNDARY_FACES_NV1", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+# faces do contorno de cada volume da malha grossa primal 2
+boundary_faces_nv2_tag = M1.mb.tag_get_handle("BOUNDARY_FACES_NV2", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+# volumes vizinhos por face de cada volume da malha grossa primal 1, setada em cada meshset do nivel 1
+neigh_volumes_nv1_tag = M1.mb.tag_get_handle("NEIGH_VOLUMES_NV1", 6, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+# volumes vizinhos por face de cada volume da malha grossa primal 2, setada em cada meshset do nivel 2
+neigh_volumes_nv2_tag = M1.mb.tag_get_handle("NEIGH_VOLUMES_NV2", 6, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+
+print('faces nos contornos dos volumes do nivel 1')
+# dicioario da seguinte forma -> id_do_volume_da_malha_grossa: [ids dos volumes da malha grossa vizinhos por face]
+neigh_meshsets = {}
+# -> id_do_volume_da_malha_grossa: meshset das faces no contorno do respectivo volume
+all_faces_boundary_nv1 = {}
+
+# lines = np.array([])
+# cols = np.array([])
+# values = np.array([], dtype=np.float64)
+# sz = [len(meshsets_nv1), len(M1.all_volumes)]
+
+for meshset in meshsets_nv1:
+    nc = M1.mb.tag_get_data(primal_id_tag1, meshset, flat=True)[0]
+    elems = M1.mb.get_entities_by_handle(meshset)
+    gids_elems = M1.mb.tag_get_data(gids_tag, elems, flat=True)
+    M1.mb.tag_set_data(fine_to_primal1_classic_tag, elems, np.repeat(nc, len(elems)))
+    neigh_meshsets[nc] = []
+    all_faces_boundary_nv1[nc] = M1.mb.create_meshset()
+    M1.mb.tag_set_data(boundary_faces_nv1_tag, all_faces_boundary_nv1[nc], nc)
+#     lines = np.append(lines, np.repeat(nc, len(elems)))
+#     cols = np.append(cols, np.array(gids_elems))
+#     values = np.append(values, np.repeat(1, len(elems)))
+#
+#
+# lines = lines.astype(np.int32)
+# cols = cols.astype(np.int32)
+#
+# inds_or1 = np.array([lines, cols, values, sz])
+# write_array('inds_or1', inds_or1)
+
+past_list_nc = set()
+
+for meshset in meshsets_nv1:
+    nc = M1.mb.tag_get_data(primal_id_tag1, meshset, flat=True)[0]
+    elems = M1.mb.get_entities_by_handle(meshset)
+
+    faces_boundary_nc = all_faces_boundary_nv1[nc]
+    past_list_nc_adj = set()
+
+    for elem in elems:
+        adjs = M1.mtu.get_bridge_adjacencies(elem, 2, 3)
+        for adj in adjs:
+            nc_adj = M1.mb.tag_get_data(fine_to_primal1_classic_tag, adj, flat=True)[0]
+            if nc_adj == nc or nc_adj in past_list_nc_adj or nc_adj in past_list_nc:
+                continue
+            past_list_nc_adj.add(nc_adj)
+
+            faces_boundary_nc_adj = all_faces_boundary_nv1[nc_adj]
+
+            meshset_adj = list(M1.mb.get_entities_by_type_and_tag(
+                    M1.root_set, types.MBENTITYSET, np.array([primal_id_tag1]),
+                    np.array([nc_adj])))[0]
+
+            all_adjs = M1.mb.get_entities_by_handle(meshset_adj)
+            all_faces_nc = M1.mtu.get_bridge_adjacencies(elems, 3, 2)
+            all_faces_nc_adj = M1.mtu.get_bridge_adjacencies(all_adjs, 3, 2)
+            intersect_faces = rng.intersect(all_faces_nc, all_faces_nc_adj)
+            M1.mb.add_entities(faces_boundary_nc, intersect_faces)
+            M1.mb.add_entities(faces_boundary_nc_adj, intersect_faces)
+            neigh_meshsets[nc].append(nc_adj)
+            neigh_meshsets[nc_adj].append(nc)
+
+    past_list_nc.add(nc)
+    neighs_nc = np.array(neigh_meshsets[nc])
+    kk = len(neighs_nc)
+    if kk < 6:
+        neighs_nc = np.append(neighs_nc, np.repeat(-1, 6-kk))
+    M1.mb.tag_set_data(neigh_volumes_nv1_tag, meshset, neighs_nc)
+
+
+print('faces nos contornos dos volumes do nivel 2')
+neigh_meshsets = {}
+all_faces_boundary_nv2 = {}
+
+# lines = np.array([])
+# cols = np.array([])
+# values = np.array([], dtype=np.float64)
+# sz = [len(meshsets_nv2), len(meshsets_nv1)]
+
+for meshset in meshsets_nv2:
+    nc = M1.mb.tag_get_data(primal_id_tag2, meshset, flat=True)[0]
+    elems = M1.mb.get_entities_by_handle(meshset)
+    ncs_nv1 = list(set(M1.mb.tag_get_data(fine_to_primal1_classic_tag, elems, flat=True)))
+    M1.mb.tag_set_data(fine_to_primal2_classic_tag, elems, np.repeat(nc, len(elems)))
+    neigh_meshsets[nc] = []
+    all_faces_boundary_nv2[nc] = M1.mb.create_meshset()
+    M1.mb.tag_set_data(boundary_faces_nv2_tag, all_faces_boundary_nv2[nc], nc)
+#     lines = np.append(lines, np.repeat(nc, len(ncs_nv1)))
+#     cols = np.append(cols, np.array(ncs_nv1))
+#     values = np.append(values, np.repeat(1, len(ncs_nv1)))
+#
+# lines = lines.astype(np.int32)
+# cols = cols.astype(np.int32)
+#
+# inds_or2 = np.array([lines, cols, values, sz])
+# write_array('inds_or2', inds_or2)
+
+past_list_nc = set()
+
+for meshset in meshsets_nv2:
+    nc = M1.mb.tag_get_data(primal_id_tag2, meshset, flat=True)[0]
+    elems = M1.mb.get_entities_by_handle(meshset)
+
+    faces_boundary_nc = all_faces_boundary_nv2[nc]
+    past_list_nc_adj = set()
+
+    for elem in elems:
+        adjs = M1.mtu.get_bridge_adjacencies(elem, 2, 3)
+        for adj in adjs:
+            nc_adj = M1.mb.tag_get_data(fine_to_primal2_classic_tag, adj, flat=True)[0]
+            if nc_adj == nc or nc_adj in past_list_nc_adj or nc_adj in past_list_nc:
+                continue
+            past_list_nc_adj.add(nc_adj)
+
+            faces_boundary_nc_adj = all_faces_boundary_nv2[nc_adj]
+
+            meshset_adj = list(M1.mb.get_entities_by_type_and_tag(
+                    M1.root_set, types.MBENTITYSET, np.array([primal_id_tag2]),
+                    np.array([nc_adj])))[0]
+
+            all_adjs = M1.mb.get_entities_by_handle(meshset_adj)
+            all_faces_nc = M1.mtu.get_bridge_adjacencies(elems, 3, 2)
+            all_faces_nc_adj = M1.mtu.get_bridge_adjacencies(all_adjs, 3, 2)
+            intersect_faces = rng.intersect(all_faces_nc, all_faces_nc_adj)
+            M1.mb.add_entities(faces_boundary_nc, intersect_faces)
+            M1.mb.add_entities(faces_boundary_nc_adj, intersect_faces)
+            neigh_meshsets[nc].append(nc_adj)
+            neigh_meshsets[nc_adj].append(nc)
+
+    past_list_nc.add(nc)
+    neighs_nc = np.array(neigh_meshsets[nc])
+    kk = len(neighs_nc)
+    if kk < 6:
+        neighs_nc = np.append(neighs_nc, np.repeat(-1, 6-kk))
+    M1.mb.tag_set_data(neigh_volumes_nv2_tag, meshset, neighs_nc)
+
+# # fim da modificacao feita por jp
+#################################################################################
 
 M1.mb.write_file("9x27x27.h5m")
 M1.mb.write_file("9x27x27.vtk")

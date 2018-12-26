@@ -1,0 +1,1957 @@
+? !!python/object/apply:numpy.core.multiarray.scalar
+- &id001 !!python/object/apply:numpy.dtype
+  args:
+  - i4
+  - 0
+  - 1
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  AAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  AwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  BgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  CQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  HwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  IwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  DwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  JwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  KgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  EgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  OwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  FQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  GAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  PwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  LQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  QwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  NAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  RwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  MwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  SwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  TgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  UQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  VwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  iQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  iAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  iwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  aAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  igAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  aQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  agAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  awAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  WgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  bwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  XQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  cwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  dQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  eAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  egAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  eQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  eQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  egAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  eAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ewAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ewAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  gAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  gQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ggAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  gwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  iAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  iQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  YwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  igAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  aAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  iwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ZgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  awAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  agAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  jwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  aQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  gAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  fgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  kwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  gwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ggAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  gQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  lwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  hAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  mQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  nAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ngAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  nQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  nQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ngAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  nAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  nwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  oQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  oAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  oAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  oQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  nwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ogAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  owAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  owAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ogAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  pQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  sAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  sQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  sgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  swAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  tAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  tQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  tgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  twAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  uAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  uQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ugAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  uwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  qwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  sAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  rgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  wwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  swAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  sgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  sQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  yAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  yAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  xgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  yQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ywAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ygAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ygAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ywAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  yQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zAAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zQAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zgAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zwAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  tgAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  tQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  tAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  2wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  uQAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  uAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  twAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  vAAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  3wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  uwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  ugAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  4wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  zwAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  0gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  5wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  1QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7AAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  6gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7wAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7wAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  7QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  8AAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  8gAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  8QAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  8QAAAA==
+? !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  8gAAAA==
+: !!python/object/apply:numpy.core.multiarray.scalar
+- *id001
+- !!binary |
+  8AAAAA==
