@@ -264,7 +264,9 @@ def write_array(name, arr):
 
 
 #--------------Início dos parâmetros de entrada-------------------
-M1= MeshManager('9x27x27.msh')          # Objeto que armazenará as informações da malha
+# os.chdir(parent_dir)
+# print(parent_dir)
+M1= MeshManager('27x27x27.msh')          # Objeto que armazenará as informações da malha
 all_volumes=M1.all_volumes
 
 # Ci = n: Ci -> Razão de engrossamento ni nível i (em relação ao nível i-1),
@@ -273,7 +275,7 @@ l1=3
 l2=9
 print("leu")
 # Posição aproximada de cada completação
-Cent_weels=[[0.5, 0.5, 8.5], [26.5, 26.5, 0.5],[9, 9, 0.5], [18, 9, 0.5], [9, 18, 0.5], [18, 18, 0.5]]
+Cent_weels=[[0.5, 0.5, 0.5], [26.5, 26.5, 26.5]]
 
 # Distância, em relação ao poço, até onde se usa malha fina
 r0=.9
@@ -300,7 +302,7 @@ def Min_Max(e):
 #--------------Definição das dimensões dos elementos da malha fina--------------
 # Esse bloco deve ser alterado para uso de malhas não estruturadas
 all_volumes=M1.all_volumes
-print(all_volumes)
+# print(all_volumes)
 verts = M1.mb.get_connectivity(all_volumes[0])     #Vértices de um elemento da malha fina
 coords = np.array([M1.mb.get_coords([vert]) for vert in verts])
 xmin, xmax = coords[0][0], coords[0][0]
@@ -346,12 +348,12 @@ for e in all_volumes:
 
 M1.mb.tag_set_data(M1.wells_tag, 0,pocos_meshset)
 print("definiu volumes na malha fina")
-print(pocos_meshset)
+# print(pocos_meshset)
 
 volumes_d = [M1.all_volumes[0]]
 volumes_n = [M1.all_volumes[-1]]
-print(volumes_d,"volumes_d")
-print(volumes_n,"volumes_n")
+# print(volumes_d,"volumes_d")
+# print(volumes_n,"volumes_n")
 
 
 
@@ -421,7 +423,6 @@ if M1.gravity == False:
 
 # # colocar gravidade
 elif M1.gravity == True:
-    pressao = []
     z_elems_d = -1*np.array([M1.mtu.get_average_position([v])[2] for v in volumes_d])
     delta_z = z_elems_d + Lz
     pressao = M1.gama*(delta_z) + press
@@ -525,7 +526,8 @@ for i in range(len(lxd1)):
                     lzd1[k]-=0.000001
                     k-=1
 #-------------------------------------------------------------------------------
-print("corrigiu planos do nível 1")'''
+print("corrigiu planos do nível 1")
+'''
 t0=time.time()
 
 # ---- Criação e preenchimento da árvore de meshsets----------------------------
@@ -678,7 +680,8 @@ for e in M1.all_volumes:
     d1_tag = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
     if d1_tag==3:
         nn+=1
-print(nn,"hhdhdhdydydydydy")'''
+print(nn,"hhdhdhdydydydydy")
+'''
 
 print('Criação da árvore: ',time.time()-t0)
 t0=time.time()
@@ -957,9 +960,9 @@ for meshset in meshsets_nv2:
 
 # # fim da modificacao feita por jp
 #################################################################################
-
-M1.mb.write_file("9x27x27.h5m")
-M1.mb.write_file("9x27x27.vtk")
+# M1.mb.
+M1.mb.write_file("27x27x27.h5m")
+M1.mb.write_file("27x27x27.vtk")
 #M1.imprima("9x36x36")
 #M1.mb.write_file('teste_3D_unstructured_18.vtk',[av])
 

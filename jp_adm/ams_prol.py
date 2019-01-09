@@ -63,6 +63,7 @@ class AMS_prol:
         self.primals2 = self.mb.get_entities_by_type_and_tag(
             self.root_set, types.MBENTITYSET, np.array([self.prilmal_ids2_tag]),
             np.array([None]))
+        self.nc2 = len(self.primals2)
 
         Lx = 27
         Ly = 27
@@ -81,6 +82,7 @@ class AMS_prol:
         t2 = time.time()
         print('finish load')
         print('took:{0}\n'.format(t2-t1))
+        self.verif = False
 
 
         # self.run()
@@ -386,7 +388,7 @@ class AMS_prol:
         """
         fluxo da malha fina com solucao direta
         """
-
+        self.set_PF()
         print('getting fine flux pf')
         t0 = time.time()
 
@@ -497,7 +499,7 @@ class AMS_prol:
 
         return A
 
-    def get_CrsMatrix_by_inds(self, inds):
+    def get_CrsMatrix_by_inds(self, inds, slice = False):
         """
         retorna uma CrsMatrix a partir de inds
         input:
@@ -514,7 +516,12 @@ class AMS_prol:
         col_map = Epetra.Map(cols, 0, self.comm)
         A = Epetra.CrsMatrix(Epetra.Copy, row_map, col_map, 7)
 
-        A.InsertGlobalValues(inds[0], inds[1], inds[2])
+        if slice == False:
+            A.InsertGlobalValues(inds[0], inds[1], inds[2])
+        elif slice==True:
+            A.InsertGlobalValues(inds[4], inds[5], inds[2])
+        else:
+            raise ValueError("especifique true ou false para slice")
 
         return A
 
@@ -586,6 +593,85 @@ class AMS_prol:
         EpetraExt.Add(matrix, False, -1.0, A, 1.0)
 
         return A
+
+    def get_negative_inverse_by_inds(self, inds):
+        """
+        retorna inds da matriz inversa a partir das informacoes (inds) da matriz de entrada
+        """
+
+        assert inds[3][0] == inds[3][1]
+        cols = inds[3][1]
+        sz = [cols, cols]
+        A = self.get_CrsMatrix_by_inds(inds, slice = True)
+
+        lines2 = np.array([])
+        cols2 = np.array([])
+        values2 = np.array([], dtype=np.float64)
+        map1 = Epetra.Map(cols, 0, self.comm)
+
+        for i in range(cols):
+            b = Epetra.Vector(map1)
+            b[i] = 1.0
+
+            if self.verif == True:
+                import pdb; pdb.set_trace()
+
+            x = self.solve_linear_problem(A, b, cols)
+
+            lines = np.nonzero(x[:])[0]
+            col = np.repeat(i, len(lines))
+            vals = x[lines]
+
+            lines2 = np.append(lines2, lines)
+            cols2 = np.append(cols2, col)
+            values2 = np.append(values2, vals)
+
+        lines2 = lines2.astype(np.int32)
+        cols2 = cols2.astype(np.int32)
+
+        inds2 = np.array([lines2, cols2, -1*values2, sz, lines2, cols2])
+
+        return inds2
+
+    def get_negative_inverse_by_inds_2(self, inds):
+        """
+        retorna inds da matriz inversa a partir das informacoes (inds) da matriz de entrada
+        sem necessidade do slice
+        """
+
+        assert inds[3][0] == inds[3][1]
+        cols = inds[3][1]
+        sz = [cols, cols]
+        A = self.get_CrsMatrix_by_inds(inds)
+
+        lines2 = np.array([])
+        cols2 = np.array([])
+        values2 = np.array([], dtype=np.float64)
+        map1 = Epetra.Map(cols, 0, self.comm)
+
+        for i in range(cols):
+            b = Epetra.Vector(map1)
+            b[i] = 1.0
+
+            if self.verif == True:
+                import pdb; pdb.set_trace()
+
+            x = self.solve_linear_problem(A, b, cols)
+
+            lines = np.nonzero(x[:])[0]
+            col = np.repeat(i, len(lines))
+            vals = x[lines]
+
+            lines2 = np.append(lines2, lines)
+            cols2 = np.append(cols2, col)
+            values2 = np.append(values2, vals)
+
+        lines2 = lines2.astype(np.int32)
+        cols2 = cols2.astype(np.int32)
+
+        inds2 = np.array([lines2, cols2, -1*values2, sz, lines2, cols2])
+
+        return inds2
 
     def get_OP(self):
         lim = 1e-7
@@ -684,7 +770,7 @@ class AMS_prol:
         self.OP = self.pymultimat(self.G, self.OP, self.nf)
         op, self.inds_OP = self.modificar_matriz(self.OP, self.nf, self.nc1, self.nf, return_inds = True)
 
-        # self.write_array('inds_op1', self.inds_OP)
+        self.write_array('inds_op1', self.inds_OP)
 
 
         gids_vert = self.mb.tag_get_data(self.global_id0_tag, self.vertex_elems, flat=True)
@@ -736,21 +822,236 @@ class AMS_prol:
 
 
 
-        # self.write_array('inds_or1', inds_or1)
+        self.write_array('inds_or1', inds_or1)
         # self.write_array('inds_map_gids_nv1', inds_map_gids_nv1)
 
     def get_OP_nv2(self):
 
-        # self.get_TC1()
-        meshsets_nv1 = self.mb.get_entities_by_type_and_tag(
-                self.root_set, types.MBENTITYSET, np.array([self.prilmal_ids1_tag]),
-                np.array([None]))
-        name_in = 'inds_tc1.npy'
-        name_out = 'inds_tc1_faces'
-        tag_nc = self.prilmal_ids1_tag
-        tag_neigh_nc = self.neigh_volumes_nv1_tag
-        self.get_TC_by_faces(meshsets_nv1, name_in, name_out, tag_nc, tag_neigh_nc)
-        self.get_TC_mod()
+        self.get_TC1()
+        self.get_TC_by_faces()
+        self.get_TC_wirebasket()
+        self.get_TC_mod_by_inds()
+        self.get_op_nv2_by_tc_mod()
+
+    def get_op_nv2_by_tc_mod(self):
+
+        inds_tc_mod = self.load_array('inds_tc_mod.npy')
+        inds_G_nv1 = self.load_array('inds_G_nv1.npy')
+        # elems_wirebasket_nv1 sao os volumes do nivel 1 ja alterados
+        elems_wirebasket_nv1 = self.load_array('elems_wirebasket_nv1.npy')
+        vertex = elems_wirebasket_nv1[0]
+        edge = elems_wirebasket_nv1[1]
+        face = elems_wirebasket_nv1[2]
+        intern = elems_wirebasket_nv1[3]
+
+        ni = len(intern)
+        nf = len(face)
+        ne = len(edge)
+        nv = len(vertex)
+
+        idsi = ni
+        idsf = ni+nf
+        idse = idsf+ne
+        idsv = idse+nv
+
+        std_map = Epetra.Map(self.nc1, 0, self.comm)
+        self.OP_nv2 = Epetra.CrsMatrix(Epetra.Copy, std_map, 1)
+
+        ind1 = idse
+        ind2 = idsv
+        lines = np.arange(nv).astype(np.int32)
+        # cols = lines.copy()
+        values = np.ones(nv)
+        sz = [nv, nv]
+        inds_0 = np.array([lines, lines, values, sz])
+        self.put_indices_into_OP_nv2(inds_0, ind1, ind2)
+
+        # lim = 1e-12
+        # for i in range(self.nc1):
+        #     p = self.OP_nv2.ExtractGlobalRowCopy(i)
+        #     if abs(sum(p[1]))<lim:
+        #         continue
+        #     print(i)
+        #     print(p[0])
+        #     print(p[1])
+        #     print('\n')
+        #
+        # import pdb; pdb.set_trace()
+
+        #######################################################
+        #elementos de aresta (edge)
+        ind1 = idsf
+        ind2 = idse
+        # import pdb; pdb.set_trace()
+
+        slice_rows = np.arange(ind1, ind2)
+        slice_cols = np.arange(ind1, ind2)
+        n_rows = None
+        n_cols = None
+        info = {'inds': inds_tc_mod, 'slice_rows': slice_rows, 'slice_cols': slice_cols, 'n_rows': n_rows, 'n_cols': n_cols}
+        inds_M = self.get_slice_by_inds(info)
+        nnn = np.zeros((inds_M[3][0], inds_M[3][1]))
+        nnn[inds_M[4], inds_M[5]] = inds_M[2]
+        # cont = 0
+        # for l in nnn:
+        #     inds = np.nonzero(l)[0]
+        #     vals = l[inds]
+        #     print(cont)
+        #     print(inds)
+        #     print(vals)
+        #     print(vals.sum())
+        #     print('\n')
+        #     import pdb; pdb.set_trace()
+        #     cont+=1
+        inds_M = self.get_negative_inverse_by_inds(inds_M)
+        M = self.get_CrsMatrix_by_inds(inds_M)
+        slice_rows = np.arange(ind1, ind2)
+        slice_cols = np.arange(idse, idsv)
+        n_rows = ne
+        n_cols = ne
+        info = {'inds': inds_tc_mod, 'slice_rows': slice_rows, 'slice_cols': slice_cols, 'n_rows': n_rows, 'n_cols': n_cols}
+        indsM2 = self.get_slice_by_inds(info)
+        M2 = self.get_CrsMatrix_by_inds(indsM2, slice=True)
+        M = self.pymultimat(M, M2, ne)
+        M2, indsM2 = self.modificar_matriz(M, ne, nv, ne, return_inds = True)
+        # self.put_CrsMatrix_into_OP(M2, ind1, ind2)
+        self.put_indices_into_OP_nv2(indsM2, ind1, ind2)
+        # import pdb; pdb.set_trace()
+        # self.test_OP_tril(ind1 = idsf, ind2 = idse)
+        ##############################################################
+
+        ##############################################################
+        #elementos de face
+        nvols2 = 0
+        if nf > ne:
+            nvols = nf
+        else:
+            nvols = ne
+        ind1 = idsi
+        ind2 = idsf
+
+        slice_rows = np.arange(ind1, ind2)
+        slice_cols = np.arange(ind1, ind2)
+        n_rows = nvols
+        n_cols = nvols
+        info = {'inds': inds_tc_mod, 'slice_rows': slice_rows, 'slice_cols': slice_cols, 'n_rows': n_rows, 'n_cols': n_cols}
+        inds_M2 = self.get_slice_by_inds(info)
+        inds_M2 = self.get_negative_inverse_by_inds(inds_M2)
+        M2 = self.get_CrsMatrix_by_inds(inds_M2)
+
+        slice_rows = np.arange(ind1, ind2)
+        slice_cols = np.arange(idsf, idse)
+        n_rows = nvols
+        n_cols = nvols
+        info = {'inds': inds_tc_mod, 'slice_rows': slice_rows, 'slice_cols': slice_cols, 'n_rows': n_rows, 'n_cols': n_cols}
+        inds_M3 = self.get_slice_by_inds(info)
+        M3 = self.get_CrsMatrix_by_inds(inds_M3)
+        M = self.modificar_matriz(M, nvols, nvols, ne)
+        M = self.pymultimat(self.pymultimat(M2, M3, nvols), M, nvols)
+        M2, indsM2 = self.modificar_matriz(M, nf, nv, nf, return_inds = True)
+        # self.put_CrsMatrix_into_OP(M2, ind1, ind2)
+        self.put_indices_into_OP_nv2(indsM2, ind1, ind2)
+        # import pdb; pdb.set_trace()
+        nvols2 = int(nvols)
+
+        ###############################################################
+
+        ###############################################################
+        #elementos internos
+        if ni > nf:
+            nvols = ni
+        else:
+            nvols = nf
+
+        ind1 = 0
+        ind2 = idsi
+
+        slice_rows = np.arange(ind1, ind2)
+        slice_cols = np.arange(ind1, ind2)
+        n_rows = nvols
+        n_cols = nvols
+        info = {'inds': inds_tc_mod, 'slice_rows': slice_rows, 'slice_cols': slice_cols, 'n_rows': n_rows, 'n_cols': n_cols}
+        inds_M2 = self.get_slice_by_inds(info)
+        inds_M2 = self.get_negative_inverse_by_inds(inds_M2)
+        M2 = self.get_CrsMatrix_by_inds(inds_M2)
+
+        slice_rows = np.arange(ind1, ind2)
+        slice_cols = np.arange(idsi, idsf)
+        n_rows = nvols
+        n_cols = nvols
+        info = {'inds': inds_tc_mod, 'slice_rows': slice_rows, 'slice_cols': slice_cols, 'n_rows': n_rows, 'n_cols': n_cols}
+        inds_M3 = self.get_slice_by_inds(info)
+        M3 = self.get_CrsMatrix_by_inds(inds_M3)
+        M, indsM = self.modificar_matriz(M, nvols, nvols, nvols2, return_inds = True)
+        M = self.pymultimat(self.pymultimat(M2, M3, nvols), M, nvols)
+
+        M2, inds_M2 = self.modificar_matriz(M, ni, nv, ni, return_inds = True)
+        self.put_indices_into_OP_nv2(indsM2, ind1, ind2)
+        # import pdb; pdb.set_trace()
+
+        ##############################################################
+        # G_nv1 = self.get_CrsMatrix_by_inds(inds_G_nv1)
+        # self.OP_nv2 = self.pymultimat(G_nv1, self.OP_nv2, self.nc1)
+        op, inds_OP_nv2 = self.modificar_matriz(self.OP_nv2, self.nc1, self.nc2, self.nc1, return_inds = True)
+        self.write_array('inds_op_nv2', inds_OP_nv2)
+
+        # vertex, edge, face, intern
+        elems_wirebasket_nv1 = self.load_array('elems_wirebasket_nv1.npy')
+        with open("gids_meshset_in_cols_op.yaml", 'r') as stream:
+            map_gids_nv1 = yaml.load(stream)
+
+        verts = elems_wirebasket_nv1[0]
+        cols = set(inds_OP_nv2[1])
+        lines = set(inds_OP_nv2[0])
+
+        print(len(cols))
+        print(len(verts))
+
+        print(verts)
+        print(cols)
+        print(lines)
+        import pdb; pdb.set_trace()
+
+        for meshset in self.primals2:
+            nc2 = self.mb.tag_get_data(self.prilmal_ids2_tag, meshset, flat=True)[0]
+            meshsets_nv1 = self.mb.get_child_meshsets(meshset)
+
+            # ids obtidos no merge
+            ncs1 = self.mb.tag_get_data(self.prilmal_ids1_tag, meshsets_nv1, flat=True)
+            # ids obtidos no OR1
+            ncs = [map_gids_nv1[nc] for nc in ncs1]
+            vertex = list(set(ncs) & set(elems_wirebasket_nv1[0]))[0]
+            indices = np.where(self.OP_nv2[vertex] == 1.0)[0][0]
+            print(vertex)
+            print(indices)
+
+            import pdb; pdb.set_trace()
+
+
+
+
+        # with io.open('gids_meshset_in_cols_op.yaml', 'w', encoding='utf8') as outfile:
+        #     yaml.dump(inds_map_gids_nv1, outfile, default_flow_style=False, allow_unicode=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         pass
 
@@ -872,13 +1173,47 @@ class AMS_prol:
         tc1 = self.pymultimat(or1, transfine, nf1)
         tc1 = self.pymultimat(tc1, op1, nf1)
         tc1, inds_tc1 = self.modificar_matriz(tc1, nc1, nc1, nc1, return_inds = True)
+
+        # # # fazendo com que todos elementos fora da diagonal sejam menores que 0
+        # for i in range(inds_tc1[3][0]):
+        #     verif = False
+        #     indices = np.where(inds_tc1[0] == i)[0]
+        #     lines = inds_tc1[0][indices]
+        #     cols = inds_tc1[1][indices]
+        #     values = inds_tc1[2][indices]
+        #     idi = np.where(cols == i)[0]
+        #
+        #     for j in range(len(values)):
+        #         if cols[j] == i:
+        #             continue
+        #         if values[j] > 0:
+        #             values[j] *= -1
+        #             values[idi] -= 2*values[j]
+        #             verif = True
+        #
+        #     if verif == True:
+        #         inds_tc1[0] = np.delete(inds_tc1[0], indices)
+        #         inds_tc1[1] = np.delete(inds_tc1[1], indices)
+        #         inds_tc1[2] = np.delete(inds_tc1[2], indices)
+        #
+        #         inds_tc1[0] = np.append(inds_tc1[0], lines)
+        #         inds_tc1[1] = np.append(inds_tc1[1], cols)
+        #         inds_tc1[2] = np.append(inds_tc1[2], values)
+
+
         self.write_array('inds_tc1', inds_tc1)
 
-    def get_TC_by_faces(self, meshsets, name_in, name_out, tag_nc, tag_neigh_nc):
+    def get_TC_by_faces(self):
         """
         modifica a transmissibilidade da malha grossa no nivel1 para obter
         a mesma apenas com a influencia de vizinhos por face
         """
+        meshsets = self.primals1
+        name_in = 'inds_tc1.npy'
+        name_out = 'inds_tc1_faces'
+        tag_nc = self.prilmal_ids1_tag
+        tag_neigh_nc = self.neigh_volumes_nv1_tag
+
         inds_tc1 = self.load_array(name_in)
         assert inds_tc1[3][0] == inds_tc1[3][1]
         assert inds_tc1[3][0] == len(meshsets)
@@ -887,8 +1222,6 @@ class AMS_prol:
         # gids_meshset in cols op
         with open("gids_meshset_in_cols_op.yaml", 'r') as stream:
             map_gids_nv1 = yaml.load(stream)
-
-        # map_gids_nv1 = dict(zip(inds_map_gids_nv1[0], inds_map_gids_nv1[1]))
 
         for meshset in meshsets:
             nc = self.mb.tag_get_data(tag_nc, meshset, flat=True)[0]
@@ -900,6 +1233,14 @@ class AMS_prol:
             lines = inds_tc1[0][indices]
             cols = inds_tc1[1][indices]
             values = inds_tc1[2][indices]
+
+            # print(nc)
+            # print(cols2)
+            # print(cols)
+            # print(values)
+            # print(values.sum())
+            # print('\n')
+            # import pdb; pdb.set_trace()
 
             inds_tc1[0] = np.delete(inds_tc1[0], indices)
             inds_tc1[1] = np.delete(inds_tc1[1], indices)
@@ -916,14 +1257,38 @@ class AMS_prol:
             cols = np.delete(cols, all_indices_out)
             lines = np.delete(lines, all_indices_out)
             values = np.delete(values, all_indices_out)
+            # print(nc)
+            # print(cols2)
+            # print(lines)
+            # print(cols)
+            #
+            # print(values)
+            # print(sum(values))
+            # print('\n')
+            # import pdb; pdb.set_trace()
 
             inds_tc1[0] = np.append(inds_tc1[0], lines)
             inds_tc1[1] = np.append(inds_tc1[1], cols)
             inds_tc1[2] = np.append(inds_tc1[2], values)
 
+        # tcc = np.zeros((self.nc1, self.nc1))
+        # tcc[inds_tc1[0], inds_tc1[1]] = inds_tc1[2]
+        # cont = 0
+        # for i in tcc:
+        #     indices = np.nonzero(i)[0]
+        #     print(cont)
+        #     print(indices)
+        #     print(i[indices])
+        #     print(sum(i))
+        #     print(all_vizz[cont])
+        #     print(all_ncs[cont])
+        #     print('\n')
+        #     import pdb; pdb.set_trace()
+        #     cont+=1
+
         self.write_array(name_out, inds_tc1)
 
-    def get_TC_mod(self):
+    def get_TC_wirebasket(self):
         inds_tc1_faces = self.load_array('inds_tc1_faces.npy')
         with open("gids_meshset_in_cols_op.yaml", 'r') as stream:
             map_gids_nv1 = yaml.load(stream)
@@ -950,17 +1315,126 @@ class AMS_prol:
             elif d2 == 2:
                 face.append(nc)
             elif d2 == 3:
-                intern.append(nc)
+                vertex.append(nc)
             else:
                 raise ValueError('Erro no valor da tag d2')
-        # print(d2)
-        # print(nc)
-        print(vertex)
-        print(edge)
-        print(face)
-        print(intern)
-        print('\n')
-        import pdb; pdb.set_trace()
+
+        vertex = sorted(vertex)
+        edge = sorted(edge)
+        face = sorted(face)
+        intern = sorted(intern)
+
+        elems_wirebasket_nv1 = np.array(intern + face + edge + vertex)
+        wirebasket_map = elems_wirebasket_nv1
+        global_map = np.arange(self.nc1)
+        sz = [self.nc1, self.nc1]
+        global_map = global_map.astype(np.int32)
+        wirebasket_map = wirebasket_map.astype(np.int32)
+        inds_G_nv1 = np.array([wirebasket_map, global_map, np.ones(self.nc1, dtype=np.float64), sz])
+        inds_GT_nv1 = np.array([global_map, wirebasket_map, np.ones(self.nc1, dtype=np.float64), sz])
+
+        # lklk = np.array(global_map)
+        # GG = np.zeros((self.nc1, self.nc1))
+        # GG[inds_GT_nv1[0], inds_GT_nv1[1]]=inds_GT_nv1[2]
+        # wire = np.dot(GG, lklk)
+        # print(wire)
+        # print(wirebasket_map)
+        # import pdb; pdb.set_trace()
+
+        self.write_array('inds_G_nv1', inds_G_nv1)
+        self.write_array('inds_GT_nv1', inds_GT_nv1)
+
+        G_nv1 = self.get_CrsMatrix_by_inds(inds_G_nv1)
+        GT_nv1 = self.get_CrsMatrix_by_inds(inds_GT_nv1)
+        TC_faces = self.get_CrsMatrix_by_inds(inds_tc1_faces)
+        TC_wirebasket = self.pymultimat(GT_nv1, TC_faces, self.nc1)
+        TC_wirebasket = self.pymultimat(TC_wirebasket, G_nv1, self.nc1)
+        TC_wirebasket, inds_tc_wirebasket = self.modificar_matriz(TC_wirebasket, self.nc1, self.nc1, self.nc1, return_inds=True)
+        self.write_array('inds_tc_wirebasket', inds_tc_wirebasket)
+
+        elems_wirebasket_nv1 = np.array([np.array(vertex), np.array(edge), np.array(face), np.array(intern)])
+        # ids dos elementos wirebasket ja mapeados nas colunas do operador de prolongamento
+        self.write_array('elems_wirebasket_nv1', elems_wirebasket_nv1)
+
+    def get_TC_mod_by_inds(self):
+        """
+        obtem a transmissibilidade wirebasket modificada
+        """
+        # ordem: vertex, edge, face, intern
+        elems_wirebasket_nv1 = self.load_array('elems_wirebasket_nv1.npy')
+        vertex = elems_wirebasket_nv1[0]
+        edge = elems_wirebasket_nv1[1]
+        face = elems_wirebasket_nv1[2]
+        intern = elems_wirebasket_nv1[3]
+
+        inds_tc_wirebasket = self.load_array('inds_tc_wirebasket.npy')
+        inds = inds_tc_wirebasket
+
+        ni = len(intern)
+        nf = len(face)
+        ne = len(edge)
+        nv = len(vertex)
+
+        lines2 = np.array([], dtype=np.int32)
+        cols2 = lines2.copy()
+        values2 = np.array([], dtype='float64')
+
+        lines = set(inds[0])
+        sz = inds[3][:]
+
+        verif1 = ni
+        verif2 = ni+nf
+        rg1 = np.arange(ni, ni+nf)
+
+        for i in lines:
+            indice = np.where(inds[0] == i)[0]
+            if i < ni:
+                lines2 = np.hstack((lines2, inds[0][indice]))
+                cols2 = np.hstack((cols2, inds[1][indice]))
+                values2 = np.hstack((values2, inds[2][indice]))
+                continue
+            elif i >= ni+nf+ne:
+                continue
+            elif i in rg1:
+                verif = verif1
+            else:
+                verif = verif2
+
+            lines_0 = inds[0][indice]
+            cols_0 = inds[1][indice]
+            vals_0 = inds[2][indice]
+
+            inds_minors = np.where(cols_0 < verif)[0]
+            vals_minors = vals_0[inds_minors]
+
+            vals_0[np.where(cols_0 == i)[0]] += sum(vals_minors)
+            inds_sup = np.where(cols_0 >= verif)[0]
+            lines_0 = lines_0[inds_sup]
+            cols_0 = cols_0[inds_sup]
+            vals_0 = vals_0[inds_sup]
+
+
+            lines2 = np.hstack((lines2, lines_0))
+            cols2 = np.hstack((cols2, cols_0))
+            values2 = np.hstack((values2, vals_0))
+
+        lines2 = lines2.astype(np.int32)
+        cols2 = cols2.astype(np.int32)
+
+        inds2 = np.array([lines2, cols2, values2, sz])
+
+        # for i in lines:
+        #     indices = np.where(inds2[0] == i)[0]
+        #     print(indices)
+        #     print(inds[0][indices])
+        #     print(inds[1][indices])
+        #     print(inds[2][indices])
+        #     print(sum(inds[2][indices]))
+        #     print('\n')
+        #     import pdb; pdb.set_trace()
+
+
+        self.write_array('inds_tc_mod', inds2)
 
     def get_wells(self):
         self.wells_n = self.mb.tag_get_data(self.wells_n_tag, 0, flat=True)[0]
@@ -1257,6 +1731,19 @@ class AMS_prol:
         values = inds[2]
 
         self.OP.InsertGlobalValues(lines, cols, values)
+
+    def put_indices_into_OP_nv2(self, inds, ind1, ind2):
+
+        n_rows = inds[3][0]
+        n_cols = inds[3][1]
+
+        map_lines = dict(zip(range(n_rows), range(ind1, ind2)))
+
+        lines = [map_lines[i] for i in inds[0]]
+        cols = inds[1]
+        values = inds[2]
+
+        self.OP_nv2.InsertGlobalValues(lines, cols, values)
 
     def pymultimat(self, A, B, nf, transpose_A = False, transpose_B = False):
         """
@@ -1615,7 +2102,6 @@ class AMS_prol:
         bf, sf, indsf = self.set_global_problem_AMS_gr_faces(map_global)
         print('set_boundary')
         self.write_array('inds_transfine_1', indsf)
-        import pdb; pdb.set_trace()
 
         bf, indsf = self.set_boundary(bf, indsf)
         # np.save('b', bf)
@@ -1629,7 +2115,7 @@ class AMS_prol:
         # self.mb.tag_set_data(self.pf_tag, self.all_volumes, np.asarray(x))
         # np.save('pf', np.asarray(x))
         self.write_array('pf', np.asarray(x))
-        # self.fine_flux_pf()
+        self.fine_flux_pf()
 
     def solucao_multiescala(self):
 
@@ -1847,9 +2333,11 @@ class AMS_prol:
         os.chdir(main_dir)
 
 
-inputfile = '9x27x27.h5m'
+inputfile = '27x27x27.h5m'
 sim = AMS_prol(inputfile)
-sim.get_TC_mod()
+# sim.run()
+sim.get_OP_nv2()
+# sim.set_PF()
 
 
 
@@ -1864,16 +2352,19 @@ sim.get_TC_mod()
 
 ##########################################
 # # escrever
-# sim.mb.delete_entities(sim.all_faces)
-# sim.mb.delete_entities(sim.all_edges)
-# name0 = '9x27x27_out_adm_op_adm.vtk'
-# name2 = '9x27x27_out_or_adm.vtk'
-# name3 = '9x27x27_out_pcorr_adm.vtk'
-# name4 = '9x27x27_out_qpms_fine_adm.vtk'
-# name5 = '9x27x27_out_erro_adm.vtk'
-# name6 = '9x27x27_out_fine_flux_pf_adm.vtk'
-# name = name4
-# sim.write_VTK(name)
+sim.mb.delete_entities(sim.all_faces)
+sim.mb.delete_entities(sim.all_edges)
+name0 = '27x27x27_out_adm_op_adm.vtk'
+name2 = '27x27x27_out_or_adm.vtk'
+name3 = '27x27x27_out_pcorr_adm.vtk'
+name4 = '27x27x27_out_qpms_fine_adm.vtk'
+name5 = '27x27x27_out_erro_adm.vtk'
+name6 = '27x27x27_out_fine_flux_pf_adm.vtk'
+name7 = '27x27x27sol_direta.vtk'
+name8 = '27x27x27sol_multiescala.vtk'
+name9 = '27x27x27op_nv1.vtk'
+name = name9
+sim.write_VTK(name)
 ##########################################
 
 #########################################

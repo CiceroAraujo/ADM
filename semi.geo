@@ -1,19 +1,20 @@
+L=27;
 //+
 Point(1) = {0, 0, 0, 1.0};
 //+
-Point(2) = {8, 0, 0, 1.0};
+Point(2) = {L, 0, 0, 1.0};
 //+
-Point(3) = {0, 8, 0, 1.0};
+Point(3) = {0, L, 0, 1.0};
 //+
-Point(4) = {8, 8, 0, 1.0};
+Point(4) = {L, L, 0, 1.0};
 //+
-Point(5) = {0, 0, 8, 1.0};
+Point(5) = {0, 0, L, 1.0};
 //+
-Point(6) = {8, 0, 8, 1.0};
+Point(6) = {L, 0, L, 1.0};
 //+
-Point(7) = {0, 8, 8, 1.0};
+Point(7) = {0, L, L, 1.0};
 //+
-Point(8) = {8, 8, 8, 1.0};
+Point(8) = {L, L, L, 1.0};
 //+
 Line(1) = {5, 6};
 //+
@@ -69,7 +70,7 @@ Surface Loop(1) = {1, 5, 4, 2, 3, 6};
 Volume(1) = {1};
 
 //+
-Transfinite Curve {6, 5, 1, 11, 12, 2, 3, 4, 10, 7, 8, 9} =51 Using Progression 1;
+Transfinite Curve {6, 5, 1, 11, 12, 2, 3, 4, 10, 7, 8, 9} =27 Using Progression 1;
 //+
 Transfinite Surface {1};
 //+
