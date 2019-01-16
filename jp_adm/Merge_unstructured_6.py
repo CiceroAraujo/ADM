@@ -3,6 +3,7 @@ from math import pi, sqrt
 from pymoab import core, types, rng, topo_util
 import time
 import os
+from PyTrilinos import Epetra, AztecOO, EpetraExt  # , Amesos
 
 parent_dir = os.path.dirname(__file__)
 out_dir = os.path.join(parent_dir, 'output')
@@ -33,13 +34,13 @@ class MeshManager:
         self.source_tag = self.mb.tag_get_handle(
             "Source term", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
 
-
         self.all_volumes = self.mb.get_entities_by_dimension(0, self.dimension)
 
         self.all_nodes = self.mb.get_entities_by_dimension(0, 0)
 
         self.mtu.construct_aentities(self.all_nodes)
         self.all_faces = self.mb.get_entities_by_dimension(0, self.dimension-1)
+        self.all_edges = self.mb.get_entities_by_dimension(0, self.dimension-2)
 
         self.dirichlet_faces = set()
         self.neumann_faces = set()
@@ -52,7 +53,7 @@ class MeshManager:
         self.get_faces_boundary()
         self.set_information("PERM", self.all_volumes, 3)
         self.get_boundary_faces()
-        self.gravity = False
+        self.gravity = True
         self.gama = 10
 
     def create_tags(self):
@@ -65,6 +66,7 @@ class MeshManager:
         self.vazao_value_tag = self.mb.tag_get_handle("Q", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.all_faces_boundary_tag = self.mb.tag_get_handle("FACES_BOUNDARY", 1, types.MB_TYPE_HANDLE, types.MB_TAG_MESH, True)
         self.area_tag = self.mb.tag_get_handle("AREA", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        self.normal_tag = self.mb.tag_get_handle("NORMAL", 3, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
 
     def create_vertices(self, coords):
         new_vertices = self.mb.create_vertices(coords)
@@ -127,7 +129,9 @@ class MeshManager:
         if len(points) == 3:
             n1 = np.array(points[0] - points[1])
             n2 = np.array(points[0] - points[2])
-            area = (np.linalg.norm(np.cross(n1, n2)))/2.0
+            normal = np.cross(n1, n2)
+            area = (np.linalg.norm(normal))/2.0
+
 
         #calculo da area para quadrilatero regular
         elif len(points) == 4:
@@ -135,10 +139,11 @@ class MeshManager:
             norms = np.array(list(map(np.linalg.norm, n)))
             ind_norm_max = np.where(norms == max(norms))[0]
             n = np.delete(n, ind_norm_max, axis = 0)
-
-            area = np.linalg.norm(np.cross(n[0], n[1]))
+            normal = np.cross(n[0], n[1])
+            area = np.linalg.norm(normal)
 
         self.mb.tag_set_data(self.area_tag, face, area)
+        self.mb.tag_set_data(self.normal_tag, face, normal)
 
     def get_boundary_nodes(self):
         all_faces = self.dirichlet_faces | self.neumann_faces
@@ -266,7 +271,12 @@ def write_array(name, arr):
 #--------------Início dos parâmetros de entrada-------------------
 # os.chdir(parent_dir)
 # print(parent_dir)
-M1= MeshManager('27x27x27.msh')          # Objeto que armazenará as informações da malha
+file = '9x27x27'
+ext_h5m = '.h5m'
+ext_vtk = '.vtk'
+ext_msh = '.msh'
+input_file = file + ext_msh
+M1= MeshManager(input_file)          # Objeto que armazenará as informações da malha
 all_volumes=M1.all_volumes
 
 # Ci = n: Ci -> Razão de engrossamento ni nível i (em relação ao nível i-1),
@@ -325,6 +335,8 @@ print("definiu dimensões")
 wells=[]
 pocos_meshset=M1.mb.create_meshset()
 
+cent_tag=M1.mb.tag_get_handle("CENT", 3, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+
 # G_ID_min -> É usado para determinar o menor dos global IDs de volume, para fins de preenchimento dos operadores
 G_ID_min=0              #É usado para determinar o manor dos global IDs de volume
 for e in all_volumes:
@@ -336,6 +348,7 @@ for e in all_volumes:
     #xxxx- Essa parte determina se cada um dos elementos está a uma distância inferior a "r0" de alguma completação
     # O quadrado serve para pegar os volumes qualquer direção
     centroid=M1.mtu.get_average_position([e])
+    M1.mb.tag_set_data(cent_tag, e, centroid)
     # Cent_wells -> Lista com o centroide de cada completação
     for c in Cent_weels:
         dx=(centroid[0]-c[0])**2
@@ -639,7 +652,7 @@ vert_meshset=M1.mb.create_meshset()
 for e in all_volumes:
     elem_tags = M1.mb.tag_get_tags_on_entity(e)
     # print(elem_tags)
-    d1_tag = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True))
+    d1_tag = int(M1.mb.tag_get_data(elem_tags[2], e, flat=True)[0])
     if d1_tag==3:
         M1.mb.add_entities(vert_meshset,[e])
 '''
@@ -822,6 +835,8 @@ neigh_volumes_nv1_tag = M1.mb.tag_get_handle("NEIGH_VOLUMES_NV1", 6, types.MB_TY
 # volumes vizinhos por face de cada volume da malha grossa primal 2, setada em cada meshset do nivel 2
 neigh_volumes_nv2_tag = M1.mb.tag_get_handle("NEIGH_VOLUMES_NV2", 6, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
 
+
+
 print('faces nos contornos dos volumes do nivel 1')
 # dicioario da seguinte forma -> id_do_volume_da_malha_grossa: [ids dos volumes da malha grossa vizinhos por face]
 neigh_meshsets = {}
@@ -857,7 +872,6 @@ past_list_nc = set()
 for meshset in meshsets_nv1:
     nc = M1.mb.tag_get_data(primal_id_tag1, meshset, flat=True)[0]
     elems = M1.mb.get_entities_by_handle(meshset)
-
     faces_boundary_nc = all_faces_boundary_nv1[nc]
     past_list_nc_adj = set()
 
@@ -890,6 +904,28 @@ for meshset in meshsets_nv1:
     if kk < 6:
         neighs_nc = np.append(neighs_nc, np.repeat(-1, 6-kk))
     M1.mb.tag_set_data(neigh_volumes_nv1_tag, meshset, neighs_nc)
+
+
+for nc in neigh_meshsets.keys():
+    meshset = list(M1.mb.get_entities_by_type_and_tag(
+            M1.root_set, types.MBENTITYSET, np.array([primal_id_tag1]),
+            np.array([nc])))[0]
+    viz_tag = M1.mb.tag_get_handle("VIZINHOS_POR_FACE_nv1_{0}".format(nc), 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+
+    elems = M1.mb.get_entities_by_handle(meshset)
+    M1.mb.tag_set_data(viz_tag, elems, np.repeat(1, len(elems)))
+    ncs_adjs = M1.mb.tag_get_data(neigh_volumes_nv1_tag, meshset, flat=True)
+    ncs_adjs = np.delete(ncs_adjs, np.where(ncs_adjs < 0)[0])
+    meshsets_adjs = [list(M1.mb.get_entities_by_type_and_tag(
+            M1.root_set, types.MBENTITYSET, np.array([primal_id_tag1]),
+            np.array([nc_adj])))[0] for nc_adj in ncs_adjs]
+
+
+    elems_adjs = [M1.mb.get_entities_by_handle(m) for m in meshsets_adjs]
+    for volumes in elems_adjs:
+        M1.mb.tag_set_data(viz_tag, volumes, np.repeat(2, len(volumes)))
+
+
 
 
 print('faces nos contornos dos volumes do nivel 2')
@@ -925,6 +961,11 @@ for meshset in meshsets_nv2:
     nc = M1.mb.tag_get_data(primal_id_tag2, meshset, flat=True)[0]
     elems = M1.mb.get_entities_by_handle(meshset)
 
+    # ############################################
+    # viz_tag = M1.mb.tag_get_handle("VIZINHOS_POR_FACE_nv2_{0}".format(nc), 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
+    # M1.mb.tag_set_data(viz_tag, elems, np.repeat(1, len(elems)))
+    # ############################################
+
     faces_boundary_nc = all_faces_boundary_nv2[nc]
     past_list_nc_adj = set()
 
@@ -943,6 +984,9 @@ for meshset in meshsets_nv2:
                     np.array([nc_adj])))[0]
 
             all_adjs = M1.mb.get_entities_by_handle(meshset_adj)
+            # #######################################
+            # M1.mb.tag_set_data(viz_tag, all_adjs, np.repeat(2, len(all_adjs)))
+            # #######################################
             all_faces_nc = M1.mtu.get_bridge_adjacencies(elems, 3, 2)
             all_faces_nc_adj = M1.mtu.get_bridge_adjacencies(all_adjs, 3, 2)
             intersect_faces = rng.intersect(all_faces_nc, all_faces_nc_adj)
@@ -958,11 +1002,51 @@ for meshset in meshsets_nv2:
         neighs_nc = np.append(neighs_nc, np.repeat(-1, 6-kk))
     M1.mb.tag_set_data(neigh_volumes_nv2_tag, meshset, neighs_nc)
 
+
+# keq_nv1 = M1.mb.tag_get_handle("KEQ_NV1", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+
+# #calculo da permeabilidade equivalente do meshset
+# ddx = 1e-3
+# ddy = 1e-3
+# ddz = 1e-3
+# for m in meshsets_nv1:
+#     elems = M1.mb.get_entities_by_handle(m)
+#     cents = M1.mb.tag_get_data(cent_tag, elems)
+#     xmin = cents[:,0].min()
+#     ymin = cents[:,1].min()
+#     zmin = cents[:,2].min()
+#     xmax = cents[:,0].max()
+#     ymax = cents[:,1].max()
+#     zmax = cents[:,2].max()
+#
+#     elems = np.array(elems)
+#
+#     inds_xmin = np.where(cents[:,0] <= xmin+ddx)[0]
+#     inds_ymin = np.where(cents[:,1] <= ymin+ddy)[0]
+#     inds_zmin = np.where(cents[:,2] <= zmin+ddz)[0]
+#     inds_xmax = np.where(cents[:,0] >= xmax-ddx)[0]
+#     inds_ymax = np.where(cents[:,1] >= ymax-ddy)[0]
+#     inds_zmax = np.where(cents[:,2] >= zmax-ddz)[0]
+#
+#     elems_min = np.array(elems[inds_xmin], elems[inds_ymin], elems[inds_zmin])
+#     elems_max = np.array(elems[inds_xmax], elems[inds_ymax], elems[inds_zmax])
+
+
+
+
+
+
 # # fim da modificacao feita por jp
 #################################################################################
 # M1.mb.
-M1.mb.write_file("27x27x27.h5m")
-M1.mb.write_file("27x27x27.vtk")
+print('writting h5m file')
+out_file = file + ext_h5m
+M1.mb.write_file(out_file)
+M1.mb.delete_entities(M1.all_faces)
+M1.mb.delete_entities(M1.all_edges)
+print('writting vtk file')
+out_file = file + ext_vtk
+M1.mb.write_file(out_file)
 #M1.imprima("9x36x36")
 #M1.mb.write_file('teste_3D_unstructured_18.vtk',[av])
 

@@ -30,7 +30,9 @@ class testing:
         # print(I1[indices])
 
     def test_tc(self):
-        inds_tc = self.load_array('inds_tc.npy')
+        inds_tc = self.load_array('inds_tc1_faces.npy')
+        elems_wirebasket_nv1 = self.load_array('elems_wirebasket_nv1.npy')
+        indsG_nv1 = self.load_array
 
         sz = inds_tc[3]
 
@@ -38,15 +40,15 @@ class testing:
 
         self.tc[inds_tc[0], inds_tc[1]] = inds_tc[2]
 
-        # for i in tc:
-        #
-        #     ind = np.nonzero(i)[0]
-        #     print(ind)
-        #     print(i[ind])
-        #
-        #     print(sum(i))
-        #     print('\n')
-        #     import pdb; pdb.set_trace()
+        for i in tc:
+
+            ind = np.nonzero(i)[0]
+            print(ind)
+            print(i[ind])
+
+            print(sum(i))
+            print('\n')
+            import pdb; pdb.set_trace()
 
     def test_qc(self):
         self.qc = self.load_array('qc.npy')
@@ -127,5 +129,6 @@ class testing:
 
 
 test1 = testing()
-test1.test_multiescala()
-test1.test_erro()
+# test1.test_multiescala()
+# test1.test_erro()
+test1.test_tc()

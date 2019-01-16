@@ -12,6 +12,7 @@ import sys
 import configparser
 import io
 import yaml
+# import upscaling
 
 name_inputfile = '9x27x27.h5m'
 principal = '/elliptic'
@@ -54,7 +55,7 @@ class AMS_prol:
         self.create_elems_wirebasket()
         self.map_wirebasket = dict(zip(self.elems_wirebasket, range(self.nf)))
 
-        self.gravity = False
+        self.gravity = True
 
         self.primals1 = self.mb.get_entities_by_type_and_tag(
             self.root_set, types.MBENTITYSET, np.array([self.prilmal_ids1_tag]),
@@ -366,6 +367,8 @@ class AMS_prol:
         self.boundary_faces_nv2_tag = self.mb.tag_get_handle("BOUNDARY_FACES_NV2")
         self.neigh_volumes_nv1_tag = self.mb.tag_get_handle("NEIGH_VOLUMES_NV1")
         self.neigh_volumes_nv2_tag = self.mb.tag_get_handle("NEIGH_VOLUMES_NV2")
+        self.normal_tag = self.mb.tag_get_handle("NORMAL")
+        self.cent_tag = self.mb.tag_get_handle("CENT")
         self.pf_tag = self.mb.tag_get_handle("PF", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.pms_tag = self.mb.tag_get_handle("PMS", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.erro_tag = self.mb.tag_get_handle("ERRO", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
@@ -374,6 +377,7 @@ class AMS_prol:
         self.pcorr_tag = self.mb.tag_get_handle("PCORR", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.s_grav_tag = self.mb.tag_get_handle("S_GRAV", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.keq_tag = self.mb.tag_get_handle("K_EQ", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
+        self.keq_nv1_tag = self.mb.tag_get_handle("KEQ_NV1", 9, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.q_pms_coarse_tag = self.mb.tag_get_handle("Q_PMS_COARSE", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.q_coarse_tag = self.mb.tag_get_handle("Q_COARSE", 1, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
         self.vert_to_col_tag = self.mb.tag_get_handle("VERT_TO_COL", 1, types.MB_TYPE_INTEGER, types.MB_TAG_SPARSE, True)
@@ -2036,6 +2040,11 @@ class AMS_prol:
 
         return  b, s, inds
 
+    def set_keqs(self):
+        all_keqs = self.load_array('all_keqs.npy')
+        all_faces = self.mtu.get_bridge_adjacencies(self.all_volumes, 3, 2)
+        self.mb.tag_set_data(self.keq_tag, all_faces, all_keqs)
+
     def set_OP(self):
         all_gids = self.mb.tag_get_data(self.global_id0_tag, self.all_volumes, flat=True)
         map_gids_in_volumes = dict(zip(all_gids, list(self.all_volumes)))
@@ -2100,14 +2109,27 @@ class AMS_prol:
         map_global = dict(zip(self.all_volumes, all_gids))
         print('trasnsfine')
         bf, sf, indsf = self.set_global_problem_AMS_gr_faces(map_global)
-        print('set_boundary')
         self.write_array('inds_transfine_1', indsf)
+        print('set_boundary')
+
 
         bf, indsf = self.set_boundary(bf, indsf)
         # np.save('b', bf)
         self.write_array('b', bf)
         # np.save('inds_transfine', indsf)
         self.write_array('inds_transfine', indsf)
+        """
+        informacoes para o solve de felipe cumaru
+
+        name_tag_s_grav = 'S_GRAV' : termo fonte de gravidade setado da face
+        name_tag_keq = 'K_EQ': permeabilidade equivalente setada nas faces
+        name_tag_dirichlet = 'P'
+        name_tag_neumann = 'Q'
+        mb = self.mb
+        mtu = self.mtu
+        elems = self.all_volumes
+
+        """
         A = self.get_CrsMatrix_by_inds(indsf)
         print('solve')
         x = self.solve_linear_problem(A, bf, self.nf)
@@ -2310,6 +2332,241 @@ class AMS_prol:
                 print(sum(p[0]))
                 import pdb; pdb.set_trace()
 
+
+
+
+
+
+
+
+
+    def upscaling_system(self, meshsets):
+        """
+        upscaling da permeabilidade dado um meshset
+        """
+        infos = {}
+        # infos['comm'] = self.comm
+        # infos['mb'] = self.mb
+        # infos['mtu'] = self.mtu
+        infos['keq_tag'] = self.keq_tag
+        infos['cent_tag'] = self.cent_tag
+        infos['area_tag'] = self.area_tag
+
+        all_centroids = self.mb.tag_get_data(self.cent_tag, self.all_volumes)
+        volumes = np.array(self.all_volumes)
+
+        ddx = 1e-4
+        ddy = 1e-4
+        ddz = 1e-4
+        dddx = 1e-4
+        dddy = 1e-4
+        dddz = 1e-4
+        for m in meshsets:
+            elems = self.mb.get_entities_by_handle(m)
+            elems = np.array(elems)
+            cents = self.mb.tag_get_data(self.cent_tag, elems)
+            xmin = cents[:,0].min()
+            ymin = cents[:,1].min()
+            zmin = cents[:,2].min()
+            xmax = cents[:,0].max()
+            ymax = cents[:,1].max()
+            zmax = cents[:,2].max()
+            inds_xmin = np.where(all_centroids[:,0] >= xmin-ddx)[0]
+            inds_ymin = np.where(all_centroids[:,1] >= ymin-ddy)[0]
+            inds_zmin = np.where(all_centroids[:,2] >= zmin-ddz)[0]
+            inds_xmax = np.where(all_centroids[:,0] <= xmax+ddx)[0]
+            inds_ymax = np.where(all_centroids[:,1] <= ymax+ddy)[0]
+            inds_zmax = np.where(all_centroids[:,2] <= zmax+ddz)[0]
+
+            inds = sorted(list(set(inds_xmin) & set(inds_xmax) & set(inds_ymin) & set(inds_ymax)
+                    & set(inds_zmin) & set(inds_zmax)))
+
+            vols = volumes[inds]
+            cents = self.mb.tag_get_data(self.cent_tag, vols)
+            xmin = cents[:,0].min()
+            ymin = cents[:,1].min()
+            zmin = cents[:,2].min()
+            xmax = cents[:,0].max()
+            ymax = cents[:,1].max()
+            zmax = cents[:,2].max()
+            inds_xmin = np.where(cents[:,0] <= xmin+dddx)[0].astype(np.uint32)
+            inds_ymin = np.where(cents[:,1] <= ymin+dddy)[0].astype(np.uint32)
+            inds_zmin = np.where(cents[:,2] <= zmin+dddz)[0].astype(np.uint32)
+            inds_xmax = np.where(cents[:,0] >= xmax-dddx)[0].astype(np.uint32)
+            inds_ymax = np.where(cents[:,1] >= ymax-dddy)[0].astype(np.uint32)
+            inds_zmax = np.where(cents[:,2] >= zmax-dddz)[0].astype(np.uint32)
+
+            elems_min = np.array([vols[inds_xmin], vols[inds_ymin], vols[inds_zmin]])
+            elems_max = np.array([vols[inds_xmax], vols[inds_ymax], vols[inds_zmax]])
+            infos['elems'] = vols
+            infos['elems_min'] = elems_min
+            infos['elems_max'] = elems_max
+            # KK = upscaling.mount_linear_system_upscaling_flow_channel(infos)
+            KK = self.mount_linear_system_upscaling_flow_channel(infos)
+            keq_nv1 = [KK[0],     0,    0,
+                           0, KK[1],    0,
+                           0,     0, KK[2]]
+            self.mb.tag_set_data(self.keq_nv1_tag, m, keq_nv1)
+
+    def montando_upscaling(self):
+        self.set_keqs()
+        self.upscaling_system(self.primals1)
+
+    def mount_linear_system_upscaling_flow_channel(self, infos):
+        """
+        """
+        unis = np.array([np.array([1,0,0]), np.array([0,1,0]), np.array([0,0,1])])
+
+        comm = self.comm
+        mb = self.mb
+        mtu = self.mtu
+        volumes = infos['elems']
+        elems_min = infos['elems_min']
+        elems_max = infos['elems_max']
+        keq_tag = infos['keq_tag']
+        cent_tag = infos['cent_tag']
+        area_tag = infos['area_tag']
+        normal_tag = self.normal_tag
+        mi = 1.0
+
+        linesM = np.array([])
+        colsM = linesM.copy()
+        valuesM = linesM.copy()
+        linesM2 = linesM.copy()
+        valuesM2 = valuesM.copy()
+        n = len(volumes)
+        szM = [n, n]
+
+        map_local = dict(zip(volumes, range(n)))
+        std_map = Epetra.Map(n, 0, self.comm)
+
+
+        #montando a transmissibilidade
+        fs = [mtu.get_bridge_adjacencies(vol, 3, 2) for vol in volumes]
+        faces = set([f for face in fs for f in face])
+        all_keqs = mb.tag_get_data(keq_tag, faces, flat=True)
+        map_keq = dict(zip(faces, all_keqs))
+
+        KEQ = []
+        P0 = 1.0
+        P1 = 0.0
+        DP = P0 - P1
+        faces_in = set()
+
+        for face in faces:
+            elems = self.mb.get_adjacencies(face, 3)
+            if len(elems) < 2:
+                continue
+            if elems[0] not in volumes or elems[1] not in volumes:
+                continue
+            keq = map_keq[face]
+            faces_in.add(face)
+            linesM = np.append(linesM, [map_local[elems[0]], map_local[elems[1]]])
+            colsM = np.append(colsM, [map_local[elems[1]], map_local[elems[0]]])
+            valuesM = np.append(valuesM, [-keq, -keq])
+
+            ind0 = np.where(linesM2 == map_local[elems[0]])
+            if len(ind0[0]) == 0:
+                linesM2 = np.append(linesM2, map_local[elems[0]])
+                valuesM2 = np.append(valuesM2, [keq])
+            else:
+                valuesM2[ind0] += keq
+
+            ind1 = np.where(linesM2 == map_local[elems[1]])
+            if len(ind1[0]) == 0:
+                linesM2 = np.append(linesM2, map_local[elems[1]])
+                valuesM2 = np.append(valuesM2, [keq])
+            else:
+                valuesM2[ind1] += keq
+
+        linesM = np.append(linesM, linesM2)
+        colsM = np.append(colsM, linesM2)
+        valuesM = np.append(valuesM, valuesM2)
+
+        linesM = linesM.astype(np.int32)
+        colsM = colsM.astype(np.int32)
+
+        inds_transfine_local = np.array([linesM, colsM, valuesM, szM, [], []])
+
+        # lim = 1e-10
+        # ggg = np.zeros((n,n))
+        # ggg[inds_transfine_local[0], inds_transfine_local[1]]= inds_transfine_local[2]
+
+
+        for i in range(3):
+            b = Epetra.Vector(std_map)
+
+            inds_transfine, b = self.set_boundary_dirichlet(map_local, elems_min[i], np.repeat(P0, len(elems_min[i])), b, inds_transfine_local)
+            inds_transfine, b = self.set_boundary_dirichlet(map_local, elems_max[i], np.repeat(P1, len(elems_max[i])), b, inds_transfine)
+            # A = get_CrsMatrix_by_inds(inds_transfine, comm)
+            A = self.get_CrsMatrix_by_inds(inds_transfine)
+            x = self.solve_linear_problem(A, b, n)
+            cent_min = mb.tag_get_data(cent_tag, elems_min[i])[:,i].min()
+            cent_max = mb.tag_get_data(cent_tag, elems_max[i])[:,i].max()
+            D = cent_max - cent_min
+            flux = {}
+            for vol in elems_max[i]:
+                flux.setdefault(vol, 0.0)
+                faces1 = self.mtu.get_bridge_adjacencies(vol, 3, 2)
+                adjs = self.mtu.get_bridge_adjacencies(vol, 2, 3)
+                for adj in adjs:
+                    if adj not in volumes:
+                        continue
+                    faces2 = self.mtu.get_bridge_adjacencies(adj, 3, 2)
+                    face = list(set(faces1) & set(faces2))
+                    if len(face) > 1:
+                        print('erro')
+                        import pdb; pdb.set_trace()
+                    # face = face[0]
+                    keq = map_keq[face[0]]
+                    q0 = -(x[map_local[vol]] - x[map_local[adj]])*keq
+                    flux[vol] += q0
+
+            qmax = sum(flux.values())
+
+            faces_max = [mtu.get_bridge_adjacencies(v,3,2) for v in elems_max[i]]
+            faces_max = [f for faces in faces_max for f in faces]
+            faces_max = list(set(faces_max) - faces_in)
+            normals = mb.tag_get_data(normal_tag, faces_max)
+            faces_sec = [faces_max[j] for j in range(len(faces_max)) if np.allclose(np.absolute(normals[j]/np.linalg.norm(normals[j])), unis[i])]
+            # faces_sec2 = []
+            # for face in faces_max:
+            #     points = mtu.get_bridge_adjacencies(face, 2, 0)
+            #     points = [self.mb.get_coords([vert]) for vert in points]
+            #     vecs = np.array([np.array(points[0] - points[1]), np.array(points[0] - points[2]), np.array(points[0] - points[3])])
+            #     normal = np.cross(vecs[0], vecs[1])
+            #     uni = np.absolute(normal/np.linalg.norm(normal))
+            #     if np.allclose(uni, unis[i]):
+            #         faces_sec2.append(face)
+            # print(faces_sec == faces_sec2)
+            # import pdb; pdb.set_trace()
+
+            sum_areas = mb.tag_get_data(area_tag, faces_sec, flat=True).sum()
+            keq_i = abs((qmax*mi*D)/(sum_areas * DP))
+            KEQ.append(keq_i)
+
+        return KEQ
+
+    def set_boundary_dirichlet(self, map_local, boundary_elems, values, b, inds):
+        map_values = dict(zip(boundary_elems, values))
+        inds2 = inds.copy()
+        for v in boundary_elems:
+            gid = map_local[v]
+            indices = np.where(inds2[0] == gid)[0]
+            inds2[0] = np.delete(inds2[0], indices)
+            inds2[1] = np.delete(inds2[1], indices)
+            inds2[2] = np.delete(inds2[2], indices)
+
+            inds2[0] = np.append(inds2[0], np.array([gid]))
+            inds2[1] = np.append(inds2[1], np.array([gid]))
+            inds2[2] = np.append(inds2[2], np.array([1.0]))
+            b[gid] = map_values[v]
+
+        inds2[0] = inds2[0].astype(np.int32)
+        inds2[1] = inds2[1].astype(np.int32)
+
+        return inds2, b
+
     @staticmethod
     def write_array(name, inf):
         """
@@ -2333,10 +2590,17 @@ class AMS_prol:
         os.chdir(main_dir)
 
 
-inputfile = '27x27x27.h5m'
-sim = AMS_prol(inputfile)
+file = '9x27x27'
+ext_h5m = file + '.h5m'
+ext_vtk = file + '.vtk'
+ext_msh = file + '.msh'
+
+sim = AMS_prol(ext_h5m)
+sim.solucao_direta()
+# sim.solucao_multiescala()
+# sim.montando_upscaling()
 # sim.run()
-sim.get_OP_nv2()
+# sim.get_OP_nv2()
 # sim.set_PF()
 
 
@@ -2354,17 +2618,17 @@ sim.get_OP_nv2()
 # # escrever
 sim.mb.delete_entities(sim.all_faces)
 sim.mb.delete_entities(sim.all_edges)
-name0 = '27x27x27_out_adm_op_adm.vtk'
-name2 = '27x27x27_out_or_adm.vtk'
-name3 = '27x27x27_out_pcorr_adm.vtk'
-name4 = '27x27x27_out_qpms_fine_adm.vtk'
-name5 = '27x27x27_out_erro_adm.vtk'
-name6 = '27x27x27_out_fine_flux_pf_adm.vtk'
-name7 = '27x27x27sol_direta.vtk'
-name8 = '27x27x27sol_multiescala.vtk'
-name9 = '27x27x27op_nv1.vtk'
-name = name9
-sim.write_VTK(name)
+name0 = file + '_out_adm_op_adm.vtk'
+name2 = file + '_out_or_adm.vtk'
+name3 = file + '_out_pcorr_adm.vtk'
+name4 = file + '_out_qpms_fine_adm.vtk'
+name5 = file + '_out_erro_adm.vtk'
+name6 = file + '_out_fine_flux_pf_adm.vtk'
+name7 = file + 'sol_direta.vtk'
+name8 = file + 'sol_multiescala.vtk'
+name9 = file + 'op_nv1.vtk'
+name = name7
+# sim.write_VTK(name)
 ##########################################
 
 #########################################
