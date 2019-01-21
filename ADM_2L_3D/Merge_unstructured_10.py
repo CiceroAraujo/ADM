@@ -215,7 +215,7 @@ class MeshManager:
         self.mb.write_file(text3,[m3])
         print(text, "Arquivos gerados")
 #--------------Início dos parâmetros de entrada-------------------
-M1= MeshManager('18x18x18.msh')          # Objeto que armazenará as informações da malha
+M1= MeshManager('27x27x27.msh')          # Objeto que armazenará as informações da malha
 all_volumes=M1.all_volumes
 
 # Ci = n: Ci -> Razão de engrossamento ni nível i (em relação ao nível i-1),
@@ -223,10 +223,10 @@ all_volumes=M1.all_volumes
 l1=3
 l2=9
 # Posição aproximada de cada completação
-Cent_weels=[[0.5, 0.5, 0.5],[17.5, 17.5, 17.5]]
+Cent_weels=[[0.5, 0.5, 0.5],[26.5, 26.5, 26.5]]
 
 # Distância, em relação ao poço, até onde se usa malha fina
-r0=4
+r0=5
 
 # Distância, em relação ao poço, até onde se usa malha intermediária
 r1=7
@@ -964,7 +964,7 @@ b_ADM=np.dot(OR_ADM,b)
 b_ADM_2=np.dot(OR_ADM_2,b_ADM)
 
 t0=time.time()
-SOL_ADM_2=np.dot(np.linalg.inv(T_ADM_2),b_ADM_2)
+SOL_ADM_2=np.linalg.solve(T_ADM_2,b_ADM_2)
 print("resolveu ADM_2: ",time.time()-t0)
 print("Prolongando sol ADM")
 t0=time.time()
@@ -978,7 +978,7 @@ SOL_TPFA = np.load('SOL_TPFA.npy')
 '''
 print("resolvendo TPFA")
 t0=time.time()
-SOL_TPFA=np.dot(np.linalg.inv(T),b)
+SOL_TPFA=np.linalg.solve(T,b)
 print("resolveu TPFA: ",time.time()-t0)
 np.save('SOL_TPFA.npy', SOL_TPFA)
 
