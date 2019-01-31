@@ -199,7 +199,7 @@ class MeshManager:
 
         qtd_pts = len(verts)
         #print qtd_pts, 'qtd_pts'
-        coords = np.reshape(coords, (qtd_pts, 3))
+        coords = np.reshape(coords, (qmeshsets[0]td_pts, 3))
         pseudo_cent = sum(coords)/qtd_pts
         return pseudo_cent
 
@@ -271,7 +271,7 @@ def write_array(name, arr):
 #--------------Início dos parâmetros de entrada-------------------
 # os.chdir(parent_dir)
 # print(parent_dir)
-file = '9x27x27'
+file = '18x18x18'
 ext_h5m = '.h5m'
 ext_vtk = '.vtk'
 ext_msh = '.msh'
@@ -285,11 +285,13 @@ l1=3
 l2=9
 print("leu")
 # Posição aproximada de cada completação
-Cent_weels=[[0.5, 0.5, 0.5], [26.5, 26.5, 26.5]]
+Cent_weels=[[0.5, 0.5, 17.5],[17.5,17.5,0.5]]
 
 # Distância, em relação ao poço, até onde se usa malha fina
 r0=.9
 
+volumes_d = []
+volumes_n = []
 # Distância, em relação ao poço, até onde se usa malha intermediária (Ainda não implementado)
 r1=2
 #--------------fim dos parâmetros de entrada------------------------------------
@@ -313,6 +315,9 @@ def Min_Max(e):
 # Esse bloco deve ser alterado para uso de malhas não estruturadas
 all_volumes=M1.all_volumes
 # print(all_volumes)
+volumes_d.append(all_volumes[0])
+volumes_n.append(all_volumes[-1])
+
 verts = M1.mb.get_connectivity(all_volumes[0])     #Vértices de um elemento da malha fina
 coords = np.array([M1.mb.get_coords([vert]) for vert in verts])
 xmin, xmax = coords[0][0], coords[0][0]
@@ -338,8 +343,10 @@ pocos_meshset=M1.mb.create_meshset()
 cent_tag=M1.mb.tag_get_handle("CENT", 3, types.MB_TYPE_DOUBLE, types.MB_TAG_SPARSE, True)
 
 # G_ID_min -> É usado para determinar o menor dos global IDs de volume, para fins de preenchimento dos operadores
+
 G_ID_min=0              #É usado para determinar o manor dos global IDs de volume
 for e in all_volumes:
+
     e_tags=M1.mb.tag_get_tags_on_entity(e)
     #xxxx- Essa parte, ao final do loop, fornece o menor global ID da malha
     if M1.mb.tag_get_data(e_tags[0], e, flat=True)>G_ID_min:
@@ -359,12 +366,15 @@ for e in all_volumes:
             if dx<dx0/4+.1 and dy<dy0/4+.1 and dz<dz0/4+.1:
                 M1.mb.add_entities(pocos_meshset,[e])
 
+
 M1.mb.tag_set_data(M1.wells_tag, 0,pocos_meshset)
 print("definiu volumes na malha fina")
 # print(pocos_meshset)
 
-volumes_d = [M1.all_volumes[0]]
-volumes_n = [M1.all_volumes[-1]]
+
+
+# volumes_d = [M1.all_volumes[0]]
+# volumes_n = [M1.all_volumes[-1]]
 # print(volumes_d,"volumes_d")
 # print(volumes_n,"volumes_n")
 
@@ -418,18 +428,20 @@ dirichlet_meshset = M1.mb.create_meshset()
 neumann_meshset = M1.mb.create_meshset()
 
 
-volumes_d = []
-volumes_n = []
+# volumes_d = []
+# volumes_n = []
 all_boundary_faces = M1.mb.tag_get_data(M1.all_faces_boundary_tag, 0, flat=True)
 all_boundary_faces = M1.mb.get_entities_by_handle(all_boundary_faces)
-for v in all_volumes:
-    #v = M1.mtu.get_bridge_adjacencies(f,2,3)
-    if Min_Max(v)[0]-0.00001<xmin:
-        volumes_d.append(v)
-        wells.append(v)
-    elif Min_Max(v)[1]+0.00001>xmin+Lx:
-        volumes_n.append(v)
-        wells.append(v)
+# for v in all_volumes:
+#     #v = M1.mtu.get_bridge_adjacencies(f,2,3)
+#     if Min_Max(v)[0]-0.00001<xmin and Min_Max(v)[2]+0.00001<(ymin+ymax)/2:
+#         volumes_d.append(v)
+#         wells.append(v)
+#     elif Min_Max(v)[1]+0.00001>xmin+Lx:
+#         volumes_n.append(v)
+#         wells.append(v)
+wells.append(volumes_d[0])
+wells.append(volumes_n[0])
 
 if M1.gravity == False:
     pressao = np.repeat(press, len(volumes_d))
@@ -442,6 +454,7 @@ elif M1.gravity == True:
 ###############################################
 else:
     print("Defina se existe gravidade (True) ou nao (False)")
+
 
 M1.mb.add_entities(dirichlet_meshset, volumes_d)
 M1.mb.add_entities(neumann_meshset, volumes_n)
